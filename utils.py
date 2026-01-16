@@ -1,4 +1,5 @@
 from models import Database
+from auth import hash_password
 from datetime import datetime, timedelta
 import csv
 import io
@@ -85,35 +86,59 @@ def export_csv(user_id=None, all_users=False):
     return output.getvalue()
 
 def import_csv(file_content, user_id=None, all_users=False):
-    """Importer des données depuis un CSV"""
+    """Importer des données depuis un CSV - crée automatiquement les utilisateurs manquants"""
     lines = file_content.decode('utf-8').strip().split('\n')
     reader = csv.DictReader(io.StringIO('\n'.join(lines)))
     
     imported_count = 0
+    created_users = []
     errors = []
     
     for row in reader:
         try:
             if all_users:
-                username = row.get('Utilisateur')
-                user_id_import = Database.get_user_id(username)
-                if not user_id_import:
-                    errors.append(f"Utilisateur '{username}' non trouvé")
+                username = row.get('Utilisateur', '').strip()
+                if not username:
+                    errors.append(f"Erreur ligne {imported_count + 1}: Utilisateur vide")
                     continue
+                
+                # Vérifier si l'utilisateur existe
+                user_id_import = Database.get_user_id(username)
+                
+                # Si l'utilisateur n'existe pas, le créer avec un mot de passe par défaut
+                if not user_id_import:
+                    default_password = f"user_{username}_{datetime.now().strftime('%Y%m%d')}"
+                    password_hash = hash_password(default_password)
+                    
+                    if Database.create_user(username, password_hash):
+                        user_id_import = Database.get_user_id(username)
+                        created_users.append({
+                            'username': username,
+                            'password': default_password
+                        })
+                    else:
+                        errors.append(f"Erreur: Impossible de créer l'utilisateur '{username}'")
+                        continue
             else:
                 user_id_import = user_id
             
-            date = row.get('Date')
-            pints = int(row.get('Pintes', 0))
-            half_pints = int(row.get('Demis', 0))
-            liters_33 = int(row.get('33cl', 0))
+            date = row.get('Date', '').strip()
+            if not date:
+                errors.append(f"Erreur ligne {imported_count + 1}: Date vide")
+                continue
+            
+            pints = int(row.get('Pintes', 0)) if row.get('Pintes', '').strip() else 0
+            half_pints = int(row.get('Demis', 0)) if row.get('Demis', '').strip() else 0
+            liters_33 = int(row.get('33cl', 0)) if row.get('33cl', '').strip() else 0
             
             Database.add_consumption(user_id_import, date, pints, half_pints, liters_33)
             imported_count += 1
+        except ValueError as e:
+            errors.append(f"Erreur ligne {imported_count + 1}: Valeur invalide - {str(e)}")
         except Exception as e:
             errors.append(f"Erreur ligne {imported_count + 1}: {str(e)}")
     
-    return imported_count, errors
+    return imported_count, errors, created_users
 
 def get_top_drinkers():
     """Obtenir le classement des plus gros buveurs"""

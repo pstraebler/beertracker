@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file, flash
 from datetime import datetime, timedelta
 from models import Database
 from auth import hash_password, verify_password, login_required, admin_required
@@ -182,10 +182,32 @@ def admin_import():
     if file.filename == '':
         return redirect(url_for('admin'))
     
-    imported_count, errors = import_csv(file.read(), all_users=True)
+    imported_count, errors, created_users = import_csv(file.read(), all_users=True)
     
-    return redirect(url_for('admin'))
+    # Créer un message avec les informations d'import
+    message = f"Import terminé: {imported_count} entrées importées"
+    
+    if created_users:
+        message += f"\n\nUtilisateurs créés ({len(created_users)}):\n"
+        for user in created_users:
+            message += f"- {user['username']}: {user['password']}\n"
+        message += "\n⚠️ IMPORTANT: Changez ces mots de passe par défaut !"
+    
+    if errors:
+        message += f"\n\nErreurs ({len(errors)}):\n"
+        for error in errors:
+            message += f"- {error}\n"
+    
+    # Pour afficher le message, utiliser les templates avec variables
+    users = Database.get_all_users()
+    top_drinkers = get_top_drinkers()
+    
+    return render_template('admin.html', 
+                         users=users, 
+                         top_drinkers=top_drinkers,
+                         import_message=message,
+                         import_success=True if imported_count > 0 else False,
+                         created_users=created_users)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
-

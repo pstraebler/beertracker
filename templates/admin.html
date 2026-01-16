@@ -15,6 +15,36 @@
     </div>
     
     <div class="container">
+        {% if import_message %}
+            <div class="card {% if import_success %}success{% else %}warning{% endif %}">
+                <h3>{% if import_success %}✅ Import réussi{% else %}⚠️ Import avec problèmes{% endif %}</h3>
+                <div style="white-space: pre-wrap; font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; margin-top: 1rem;">{{ import_message }}</div>
+            </div>
+            
+            {% if created_users %}
+                <div class="card warning" style="margin-top: 1rem;">
+                    <h3>👤 Utilisateurs créés automatiquement</h3>
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Mot de passe temporaire</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in created_users %}
+                                <tr>
+                                    <td><strong>{{ user.username }}</strong></td>
+                                    <td><code>{{ user.password }}</code></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 1rem; color: #e67e22;"><strong>⚠️ Important:</strong> Ces utilisateurs ont un mot de passe temporaire. Demandez-leur de le changer lors de leur première connexion ou changez-le depuis le panel admin.</p>
+                </div>
+            {% endif %}
+        {% endif %}
+        
         <div class="admin-section">
             <div class="card">
                 <h3>Gestion des utilisateurs</h3>
@@ -92,6 +122,10 @@
                             <input type="file" name="file" accept=".csv" required>
                             <button type="submit" class="btn-secondary">Importer</button>
                         </form>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+                            <strong>Format attendu:</strong> Utilisateur | Date | Pintes | Demis | 33cl<br>
+                            <strong>Les utilisateurs manquants seront créés automatiquement.</strong>
+                        </p>
                     </div>
                 </div>
             </div>
