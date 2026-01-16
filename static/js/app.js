@@ -26,7 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
         endDateInput.value = today;
     }
     
-    loadStats();
+    // Vérifier que Chart.js est chargé
+    if (typeof Chart !== 'undefined') {
+        loadStats();
+    } else {
+        console.error('Chart.js n\'est pas chargé');
+        setTimeout(loadStats, 1000); // Réessayer après 1 seconde
+    }
 });
 
 function changeBeer(type, value) {
@@ -64,7 +70,10 @@ function saveBeer() {
         document.getElementById('liters_33-count').innerText = '0';
         loadStats();
     })
-    .catch(error => console.error('Erreur:', error));
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'enregistrement');
+    });
 }
 
 function loadStats() {
@@ -83,43 +92,59 @@ function loadStats() {
 }
 
 function updateStatsDisplay(data) {
-    document.getElementById('total-pints').innerText = data.total_pints;
-    document.getElementById('total-half').innerText = data.total_half_pints;
-    document.getElementById('total-33').innerText = data.total_33cl;
-    document.getElementById('total-liters').innerText = data.total_liters;
+    const totalPintsEl = document.getElementById('total-pints');
+    const totalHalfEl = document.getElementById('total-half');
+    const total33El = document.getElementById('total-33');
+    const totalLitersEl = document.getElementById('total-liters');
+    
+    if (totalPintsEl) totalPintsEl.innerText = data.total_pints;
+    if (totalHalfEl) totalHalfEl.innerText = data.total_half_pints;
+    if (total33El) total33El.innerText = data.total_33cl;
+    if (totalLitersEl) totalLitersEl.innerText = data.total_liters;
     
     // Afficher les avertissements
     const warningsContainer = document.getElementById('warnings-container');
     const warningsList = document.getElementById('warnings-list');
     
-    if (data.warnings && data.warnings.length > 0) {
-        warningsContainer.style.display = 'block';
-        warningsList.innerHTML = '';
-        data.warnings.forEach(warning => {
-            const li = document.createElement('li');
-            li.innerText = `${warning.date}: ${warning.count} bières 🚨`;
-            warningsList.appendChild(li);
-        });
-    } else {
-        warningsContainer.style.display = 'none';
+    if (warningsContainer && warningsList) {
+        if (data.warnings && data.warnings.length > 0) {
+            warningsContainer.style.display = 'block';
+            warningsList.innerHTML = '';
+            data.warnings.forEach(warning => {
+                const li = document.createElement('li');
+                li.innerText = `${warning.date}: ${warning.count} bières 🚨`;
+                warningsList.appendChild(li);
+            });
+        } else {
+            warningsContainer.style.display = 'none';
+        }
     }
 }
 
 function updateCharts(data) {
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js n\'est pas disponible');
+        return;
+    }
     updateMonthlyChart(data.monthly_stats);
     updateTotalChart(data.records);
 }
 
 function updateMonthlyChart(monthlyStats) {
     const ctx = document.getElementById('monthlyChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.warn('Element monthlyChart non trouvé');
+        return;
+    }
     
     const months = Object.keys(monthlyStats).sort();
     const pintData = months.map(m => monthlyStats[m].pints || 0);
     const halfData = months.map(m => monthlyStats[m].half_pints || 0);
     const thirtyThreeData = months.map(m => monthlyStats[m]['33cl'] || 0);
     
-    if (monthlyChart) monthlyChart.destroy();
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
     
     monthlyChart = new Chart(ctx, {
         type: 'bar',
@@ -173,7 +198,10 @@ function updateMonthlyChart(monthlyStats) {
 
 function updateTotalChart(records) {
     const ctx = document.getElementById('totalChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.warn('Element totalChart non trouvé');
+        return;
+    }
     
     // Trier par date
     const sorted = records.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -183,10 +211,12 @@ function updateTotalChart(records) {
     const data = sorted.map(r => {
         const liters = (r.pints * 0.5) + (r.half_pints * 0.25) + (r.liters_33 * 0.33);
         cumulativeLiters += liters;
-        return cumulativeLiters.toFixed(2);
+        return parseFloat(cumulativeLiters.toFixed(2));
     });
     
-    if (totalChart) totalChart.destroy();
+    if (totalChart) {
+        totalChart.destroy();
+    }
     
     totalChart = new Chart(ctx, {
         type: 'line',
@@ -225,4 +255,3 @@ function updateStats() {
 function exportData() {
     window.location.href = '/api/export';
 }
-
