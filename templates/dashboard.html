@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - Suivi Consommation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h2>🍺 Suivi Consommation - {{ username }}</h2>
+            <a href="/logout" class="btn-secondary">Déconnexion</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="top-section">
+            <div class="card">
+                <h3>Ajouter une consommation</h3>
+                <div class="date-select">
+                    <label for="today-date">Date</label>
+                    <input type="date" id="today-date">
+                </div>
+                
+                <div class="beer-selector">
+                    <div class="beer-type">
+                        <label>Pintes (50cl)</label>
+                        <div class="quantity-control">
+                            <button class="btn-minus" onclick="changeBeer('pints', -1)">−</button>
+                            <span id="pints-count">0</span>
+                            <button class="btn-plus" onclick="changeBeer('pints', 1)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="beer-type">
+                        <label>Demis (25cl)</label>
+                        <div class="quantity-control">
+                            <button class="btn-minus" onclick="changeBeer('half_pints', -1)">−</button>
+                            <span id="half_pints-count">0</span>
+                            <button class="btn-plus" onclick="changeBeer('half_pints', 1)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="beer-type">
+                        <label>33cl</label>
+                        <div class="quantity-control">
+                            <button class="btn-minus" onclick="changeBeer('liters_33', -1)">−</button>
+                            <span id="liters_33-count">0</span>
+                            <button class="btn-plus" onclick="changeBeer('liters_33', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-primary" onclick="saveBeer()">Enregistrer</button>
+            </div>
+        </div>
+        
+        <div class="stats-section">
+            <div class="card">
+                <h3>Statistiques</h3>
+                <div class="date-range">
+                    <label>Depuis le</label>
+                    <input type="date" id="start-date">
+                    <label>jusqu'au</label>
+                    <input type="date" id="end-date">
+                    <button class="btn-secondary" onclick="updateStats()">Mettre à jour</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value"><span id="total-liters">0</span>L</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Pintes</div>
+                        <div class="stat-value" id="total-pints">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Demis</div>
+                        <div class="stat-value" id="total-half">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">33cl</div>
+                        <div class="stat-value" id="total-33">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="warnings-section" id="warnings-container" style="display:none;">
+            <div class="card warning">
+                <h3>⚠️ Avertissements</h3>
+                <ul id="warnings-list"></ul>
+            </div>
+        </div>
+        
+        <div class="charts-section">
+            <div class="card">
+                <h3>Consommation par mois</h3>
+                anvas id="monthlyChart"></canvas>
+            </div>
+            
+            <div class="card">
+                <h3>Timeline totale</h3>
+                anvas id="totalChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="export-section">
+            <div class="card">
+                <h3>Export / Import</h3>
+                <button class="btn-secondary" onclick="exportData()">Télécharger CSV</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Suivi Consommation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h2>🍺 Administration</h2>
+            <a href="/logout" class="btn-secondary">Déconnexion</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="admin-section">
+            <div class="card">
+                <h3>Gestion des utilisateurs</h3>
+                
+                <div class="admin-form">
+                    <h4>Créer un nouvel utilisateur</h4>
+                    <form method="POST" action="/admin/user/create">
+                        <input type="text" name="username" placeholder="Pseudo" required>
+                        <input type="password" name="password" placeholder="Mot de passe" required>
+                        <button type="submit" class="btn-primary">Créer</button>
+                    </form>
+                </div>
+                
+                <h4>Utilisateurs existants</h4>
+                <div class="users-list">
+                    {% for user in users %}
+                        <div class="user-item">
+                            <span>{{ user.username }}</span>
+                            <div class="user-actions">
+                                <form method="POST" action="/admin/user/{{ user.id }}/password" class="inline-form">
+                                    <input type="password" name="password" placeholder="Nouveau mot de passe" required>
+                                    <button type="submit" class="btn-secondary btn-sm">Changer MDP</button>
+                                </form>
+                                <form method="POST" action="/admin/user/{{ user.id }}/delete" class="inline-form" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                    <button type="submit" class="btn-danger btn-sm">Supprimer</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-section">
+            <div class="card">
+                <h3>Classement des plus gros buveurs</h3>
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th>Rang</th>
+                            <th>Utilisateur</th>
+                            <th>Pintes</th>
+                            <th>Demis</th>
+                            <th>33cl</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for drinker in top_drinkers %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ drinker.username }}</td>
+                                <td>{{ drinker.total_pints or 0 }}</td>
+                                <td>{{ drinker.total_half_pints or 0 }}</td>
+                                <td>{{ drinker.total_33cl or 0 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="admin-section">
+            <div class="card">
+                <h3>Import / Export de données</h3>
+                
+                <div class="import-export">
+                    <div>
+                        <h4>Exporter toutes les données</h4>
+                        <a href="/admin/export" class="btn-secondary">Télécharger CSV complet</a>
+                    </div>
+                    
+                    <div>
+                        <h4>Importer des données</h4>
+                        <form method="POST" action="/admin/import" enctype="multipart/form-data">
+                            <input type="file" name="file" accept=".csv" required>
+                            <button type="submit" class="btn-secondary">Importer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

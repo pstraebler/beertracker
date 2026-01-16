@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  beer-tracker:
+    build: .
+    ports:
+      - "8080:5000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=app.py
+    command: python app.py
+
