@@ -6,7 +6,7 @@ let currentBeer = {
 
 let monthlyChart = null;
 let totalChart = null;
-let savingInProgress = false;  // Eviter les double-clics
+let savingInProgress = false;
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
@@ -32,11 +32,43 @@ document.addEventListener('DOMContentLoaded', function() {
         loadStats();
     } else {
         console.error('Chart.js n\'est pas chargé');
-        setTimeout(loadStats, 1000); // Réessayer après 1 seconde
+        setTimeout(loadStats, 1000);
     }
+    
+    // ⭐ CHARGER LA CONSOMMATION D'AUJOURD'HUI
+    loadTodayConsumption();
 });
 
-// ⭐ NOUVELLE VERSION - ENREGISTREMENT AUTOMATIQUE
+// ⭐ NOUVELLE FONCTION - Charger les données d'aujourd'hui
+function loadTodayConsumption() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Faire un appel API pour obtenir JUSTE aujourd'hui
+    fetch(`/api/consumption?start_date=${today}&end_date=${today}`)
+        .then(response => response.json())
+        .then(data => {
+            // Récupérer le premier (et unique) enregistrement d'aujourd'hui
+            if (data.records && data.records.length > 0) {
+                const todayRecord = data.records[0]; // Puisqu'on filtre uniquement d'aujourd'hui
+                
+                // Charger les valeurs dans currentBeer
+                currentBeer.pints = todayRecord.pints || 0;
+                currentBeer.half_pints = todayRecord.half_pints || 0;
+                currentBeer.liters_33 = todayRecord.liters_33 || 0;
+                
+                // Mettre à jour l'affichage des compteurs
+                document.getElementById('pints-count').innerText = currentBeer.pints;
+                document.getElementById('half_pints-count').innerText = currentBeer.half_pints;
+                document.getElementById('liters_33-count').innerText = currentBeer.liters_33;
+                
+                console.log('Consommation d\'aujourd\'hui chargée:', currentBeer);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement de la consommation d\'aujourd\'hui:', error);
+        });
+}
+
 function changeBeer(type, value) {
     currentBeer[type] = Math.max(0, currentBeer[type] + value);
     document.getElementById(`${type}-count`).innerText = currentBeer[type];
@@ -47,13 +79,12 @@ function changeBeer(type, value) {
 
 // Fonction d'enregistrement automatique
 function saveBeerAutomatic(type, value) {
-    if (savingInProgress) return; // Éviter les doublons
+    if (savingInProgress) return;
     
     savingInProgress = true;
     
     const date = document.getElementById('today-date').value;
     
-    // Envoyer uniquement la modification (1 pinte/demi/33cl)
     const payload = {
         date: date,
         pints: type === 'pints' ? value : 0,
@@ -70,15 +101,13 @@ function saveBeerAutomatic(type, value) {
     })
     .then(response => response.json())
     .then(data => {
-        // Afficher une petite confirmation
         showSaveNotification(type, value);
-        loadStats(); // Rafraîchir les stats
+        loadStats();
         savingInProgress = false;
     })
     .catch(error => {
         console.error('Erreur:', error);
         savingInProgress = false;
-        // Annuler la modification locale si erreur
         currentBeer[type] = Math.max(0, currentBeer[type] - value);
         document.getElementById(`${type}-count`).innerText = currentBeer[type];
         alert('Erreur lors de l\'enregistrement. Vérifiez votre connexion.');
@@ -113,7 +142,6 @@ function showSaveNotification(type, value) {
     
     document.body.appendChild(notificationDiv);
     
-    // Retirer après 2 secondes
     setTimeout(() => {
         notificationDiv.style.animation = 'slideOut 0.3s ease-out';
         setTimeout(() => notificationDiv.remove(), 300);
@@ -147,6 +175,10 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+function saveBeer() {
+    alert('Les bières sont maintenant enregistrées automatiquement ! 🍺');
+}
+
 function loadStats() {
     const startDate = document.getElementById('start-date')?.value || '';
     const endDate = document.getElementById('end-date')?.value || '';
@@ -173,7 +205,6 @@ function updateStatsDisplay(data) {
     if (total33El) total33El.innerText = data.total_33cl;
     if (totalLitersEl) totalLitersEl.innerText = data.total_liters;
     
-    // Afficher les avertissements
     const warningsContainer = document.getElementById('warnings-container');
     const warningsList = document.getElementById('warnings-list');
     
@@ -274,7 +305,6 @@ function updateTotalChart(records) {
         return;
     }
     
-    // Trier par date
     const sorted = records.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
     
     let cumulativeLiters = 0;
@@ -293,15 +323,17 @@ function updateTotalChart(records) {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Total cumulé (L)',
-                data: data,
-                borderColor: '#27ae60',
-                backgroundColor: 'rgba(39, 174, 96, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4
-            }]
+            datasets: [
+                {
+                    label: 'Total cumulé (L)',
+                    data: data,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
         },
         options: {
             responsive: true,
