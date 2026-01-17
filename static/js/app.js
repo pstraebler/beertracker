@@ -6,6 +6,7 @@ let currentBeer = {
 
 let monthlyChart = null;
 let totalChart = null;
+let savingInProgress = false;  // Eviter les double-clics
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
@@ -35,46 +36,116 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ⭐ NOUVELLE VERSION - ENREGISTREMENT AUTOMATIQUE
 function changeBeer(type, value) {
     currentBeer[type] = Math.max(0, currentBeer[type] + value);
     document.getElementById(`${type}-count`).innerText = currentBeer[type];
+    
+    // 🔄 Enregistrer automatiquement
+    saveBeerAutomatic(type, value);
 }
 
-function saveBeer() {
-    const date = document.getElementById('today-date').value;
-    const total = currentBeer.pints + currentBeer.half_pints + currentBeer.liters_33;
+// Fonction d'enregistrement automatique
+function saveBeerAutomatic(type, value) {
+    if (savingInProgress) return; // Éviter les doublons
     
-    if (total === 0) {
-        alert('Veuillez sélectionner au moins une bière');
-        return;
-    }
+    savingInProgress = true;
+    
+    const date = document.getElementById('today-date').value;
+    
+    // Envoyer uniquement la modification (1 pinte/demi/33cl)
+    const payload = {
+        date: date,
+        pints: type === 'pints' ? value : 0,
+        half_pints: type === 'half_pints' ? value : 0,
+        liters_33: type === 'liters_33' ? value : 0
+    };
     
     fetch('/api/consumption', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            date: date,
-            pints: currentBeer.pints,
-            half_pints: currentBeer.half_pints,
-            liters_33: currentBeer.liters_33
-        })
+        body: JSON.stringify(payload)
     })
     .then(response => response.json())
     .then(data => {
-        alert('Consommation enregistrée !');
-        currentBeer = {pints: 0, half_pints: 0, liters_33: 0};
-        document.getElementById('pints-count').innerText = '0';
-        document.getElementById('half_pints-count').innerText = '0';
-        document.getElementById('liters_33-count').innerText = '0';
-        loadStats();
+        // Afficher une petite confirmation
+        showSaveNotification(type, value);
+        loadStats(); // Rafraîchir les stats
+        savingInProgress = false;
     })
     .catch(error => {
         console.error('Erreur:', error);
-        alert('Erreur lors de l\'enregistrement');
+        savingInProgress = false;
+        // Annuler la modification locale si erreur
+        currentBeer[type] = Math.max(0, currentBeer[type] - value);
+        document.getElementById(`${type}-count`).innerText = currentBeer[type];
+        alert('Erreur lors de l\'enregistrement. Vérifiez votre connexion.');
     });
 }
+
+// Fonction pour afficher une notification de succès
+function showSaveNotification(type, value) {
+    const beerLabels = {
+        'pints': 'Pinte',
+        'half_pints': 'Demi',
+        'liters_33': '33cl'
+    };
+    
+    const notificationDiv = document.createElement('div');
+    notificationDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #27ae60;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        z-index: 9999;
+        font-weight: bold;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    const symbol = value > 0 ? '✅' : '❌';
+    notificationDiv.innerText = `${symbol} ${beerLabels[type]} ${value > 0 ? '+' : ''}${value}`;
+    
+    document.body.appendChild(notificationDiv);
+    
+    // Retirer après 2 secondes
+    setTimeout(() => {
+        notificationDiv.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notificationDiv.remove(), 300);
+    }, 2000);
+}
+
+// Animation CSS pour les notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 
 function loadStats() {
     const startDate = document.getElementById('start-date')?.value || '';
