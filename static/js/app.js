@@ -8,7 +8,6 @@ let monthlyChart = null;
 let totalChart = null;
 let savingInProgress = false;
 
-// Initialisation
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
     const todayInput = document.getElementById('today-date');
@@ -17,17 +16,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (todayInput) {
         todayInput.value = today;
+        
+        // ⭐ AJOUTER: Event listener pour changement de date
+        todayInput.addEventListener('change', function() {
+            loadTodayConsumption();
+        });
     }
     
     if (startDateInput && endDateInput) {
-        // Dernier mois par défaut
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - 30);
         startDateInput.value = startDate.toISOString().split('T')[0];
         endDateInput.value = today;
     }
     
-    // Vérifier que Chart.js est chargé
     if (typeof Chart !== 'undefined') {
         loadStats();
     } else {
@@ -35,37 +37,48 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(loadStats, 1000);
     }
     
-    // ⭐ CHARGER LA CONSOMMATION D'AUJOURD'HUI
     loadTodayConsumption();
 });
 
-// ⭐ NOUVELLE FONCTION - Charger les données d'aujourd'hui
+// ⭐ FONCTION AMÉLIORÉE - Charger les données d'une date spécifique
 function loadTodayConsumption() {
-    const today = new Date().toISOString().split('T')[0];
+    // ✅ Récupérer la date du champ input (pas toujours "aujourd'hui")
+    const selectedDate = document.getElementById('today-date').value;
     
-    // Faire un appel API pour obtenir JUSTE aujourd'hui
-    fetch(`/api/consumption?start_date=${today}&end_date=${today}`)
+    console.log('Chargement de la consommation pour:', selectedDate);
+    
+    // Faire un appel API pour obtenir JUSTE cette date
+    fetch(`/api/consumption?start_date=${selectedDate}&end_date=${selectedDate}`)
         .then(response => response.json())
         .then(data => {
-            // Récupérer le premier (et unique) enregistrement d'aujourd'hui
+            // Réinitialiser les compteurs
+            currentBeer = {
+                pints: 0,
+                half_pints: 0,
+                liters_33: 0
+            };
+            
+            // Récupérer le premier (et unique) enregistrement de ce jour
             if (data.records && data.records.length > 0) {
-                const todayRecord = data.records[0]; // Puisqu'on filtre uniquement d'aujourd'hui
+                const dayRecord = data.records[0];
                 
                 // Charger les valeurs dans currentBeer
-                currentBeer.pints = todayRecord.pints || 0;
-                currentBeer.half_pints = todayRecord.half_pints || 0;
-                currentBeer.liters_33 = todayRecord.liters_33 || 0;
+                currentBeer.pints = dayRecord.pints || 0;
+                currentBeer.half_pints = dayRecord.half_pints || 0;
+                currentBeer.liters_33 = dayRecord.liters_33 || 0;
                 
-                // Mettre à jour l'affichage des compteurs
-                document.getElementById('pints-count').innerText = currentBeer.pints;
-                document.getElementById('half_pints-count').innerText = currentBeer.half_pints;
-                document.getElementById('liters_33-count').innerText = currentBeer.liters_33;
-                
-                console.log('Consommation d\'aujourd\'hui chargée:', currentBeer);
+                console.log('Consommation trouvée pour', selectedDate, ':', currentBeer);
+            } else {
+                console.log('Aucune consommation trouvée pour', selectedDate);
             }
+            
+            // Mettre à jour l'affichage des compteurs
+            document.getElementById('pints-count').innerText = currentBeer.pints;
+            document.getElementById('half_pints-count').innerText = currentBeer.half_pints;
+            document.getElementById('liters_33-count').innerText = currentBeer.liters_33;
         })
         .catch(error => {
-            console.error('Erreur lors du chargement de la consommation d\'aujourd\'hui:', error);
+            console.error('Erreur lors du chargement de la consommation:', error);
         });
 }
 
