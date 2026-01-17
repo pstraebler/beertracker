@@ -112,7 +112,7 @@ function updateStatsDisplay(data) {
             warningsList.innerHTML = '';
             data.warnings.forEach(warning => {
                 const li = document.createElement('li');
-                li.innerText = `${warning.date}: ${warning.count} bières 🚨`;
+                li.innerText = `🚨 Vous avez bu au moins 1.5L de bière aujourd'hui ! 🚨`; 
                 warningsList.appendChild(li);
             });
         } else {

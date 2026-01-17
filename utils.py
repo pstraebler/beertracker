@@ -1,6 +1,6 @@
 from models import Database
 from auth import hash_password
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import csv
 import io
 
@@ -13,6 +13,7 @@ def calculate_stats(user_id, start_date=None, end_date=None):
     total_33cl = 0
     total_liters = 0
     daily_warnings = []
+    today_str = date.today().isoformat()  # "YYYY-MM-DD"
     monthly_stats = {}
     
     for record in records:
@@ -31,10 +32,12 @@ def calculate_stats(user_id, start_date=None, end_date=None):
         # Vérifier si >= 3 bières le même jour
         total_beers = pints + half_pints + liters_33
         if total_beers >= 3:
-            daily_warnings.append({
-                'date': record['date'],
-                'count': total_beers
-            })
+            # NE GARDER QUE LES AVERTISSEMENTS DU JOUR COURANT
+            if record['date'] == today_str:
+                daily_warnings.append({
+                    'date': record['date'],
+                    'count': total_beers
+                })
         
         # Stats par mois
         month_key = record['date'][:7]  # YYYY-MM
