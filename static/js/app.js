@@ -10,14 +10,14 @@ let savingInProgress = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
+    const now = new Date().toTimeString().slice(0, 5); // HH:MM
+    
     const todayInput = document.getElementById('today-date');
     const startDateInput = document.getElementById('start-date');
     const endDateInput = document.getElementById('end-date');
     
     if (todayInput) {
         todayInput.value = today;
-        
-        // ⭐ AJOUTER: Event listener pour changement de date
         todayInput.addEventListener('change', function() {
             loadTodayConsumption();
         });
@@ -40,45 +40,37 @@ document.addEventListener('DOMContentLoaded', function() {
     loadTodayConsumption();
 });
 
-// ⭐ FONCTION AMÉLIORÉE - Charger les données d'une date spécifique
+// Charger la consommation du jour entier (tous créneaux)
 function loadTodayConsumption() {
-    // ✅ Récupérer la date du champ input (pas toujours "aujourd'hui")
     const selectedDate = document.getElementById('today-date').value;
     
     console.log('Chargement de la consommation pour:', selectedDate);
     
-    // Faire un appel API pour obtenir JUSTE cette date
     fetch(`/api/consumption?start_date=${selectedDate}&end_date=${selectedDate}`)
         .then(response => response.json())
         .then(data => {
-            // Réinitialiser les compteurs
             currentBeer = {
                 pints: 0,
                 half_pints: 0,
                 liters_33: 0
             };
             
-            // Récupérer le premier (et unique) enregistrement de ce jour
+            // Agréger TOUS les enregistrements du jour (tous les créneaux)
             if (data.records && data.records.length > 0) {
-                const dayRecord = data.records[0];
-                
-                // Charger les valeurs dans currentBeer
-                currentBeer.pints = dayRecord.pints || 0;
-                currentBeer.half_pints = dayRecord.half_pints || 0;
-                currentBeer.liters_33 = dayRecord.liters_33 || 0;
-                
-                console.log('Consommation trouvée pour', selectedDate, ':', currentBeer);
-            } else {
-                console.log('Aucune consommation trouvée pour', selectedDate);
+                data.records.forEach(record => {
+                    currentBeer.pints += record.pints || 0;
+                    currentBeer.half_pints += record.half_pints || 0;
+                    currentBeer.liters_33 += record.liters_33 || 0;
+                });
+                console.log('Consommation totale du jour:', currentBeer);
             }
             
-            // Mettre à jour l'affichage des compteurs
             document.getElementById('pints-count').innerText = currentBeer.pints;
             document.getElementById('half_pints-count').innerText = currentBeer.half_pints;
             document.getElementById('liters_33-count').innerText = currentBeer.liters_33;
         })
         .catch(error => {
-            console.error('Erreur lors du chargement de la consommation:', error);
+            console.error('Erreur lors du chargement:', error);
         });
 }
 
@@ -86,20 +78,22 @@ function changeBeer(type, value) {
     currentBeer[type] = Math.max(0, currentBeer[type] + value);
     document.getElementById(`${type}-count`).innerText = currentBeer[type];
     
-    // 🔄 Enregistrer automatiquement
     saveBeerAutomatic(type, value);
 }
 
-// Fonction d'enregistrement automatique
+// Enregistrer automatiquement avec heure actuelle
 function saveBeerAutomatic(type, value) {
     if (savingInProgress) return;
     
     savingInProgress = true;
     
     const date = document.getElementById('today-date').value;
+    const now = new Date();
+    const time = now.toTimeString().slice(0, 8); // HH:MM:SS
     
     const payload = {
         date: date,
+        time: time,
         pints: type === 'pints' ? value : 0,
         half_pints: type === 'half_pints' ? value : 0,
         liters_33: type === 'liters_33' ? value : 0
@@ -127,7 +121,6 @@ function saveBeerAutomatic(type, value) {
     });
 }
 
-// Fonction pour afficher une notification de succès
 function showSaveNotification(type, value) {
     const beerLabels = {
         'pints': 'Pinte',
@@ -161,7 +154,6 @@ function showSaveNotification(type, value) {
     }, 2000);
 }
 
-// Animation CSS pour les notifications
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -222,13 +214,41 @@ function updateStatsDisplay(data) {
     const warningsList = document.getElementById('warnings-list');
     
     if (warningsContainer && warningsList) {
-        if (data.warnings && data.warnings.length > 0) {
+        // Filtrer les avertissements : garder seulement ceux dont la fenêtre de 3h n'est pas expirée
+        const now = new Date();
+        const activeWarnings = data.warnings.filter(warning => {
+            // Construire la date/heure de fin en format correct
+            const endDateTime = new Date(warning.end_date + 'T' + warning.end_time);
+            return now < endDateTime;
+        });
+        
+        if (activeWarnings && activeWarnings.length > 0) {
             warningsContainer.style.display = 'block';
             warningsList.innerHTML = '';
-            data.warnings.forEach(warning => {
-                const li = document.createElement('li');
-                li.innerText = `🚨 Vous avez bu au moins 1.5L de bière aujourd'hui ! 🚨`; 
-                warningsList.appendChild(li);
+            
+            activeWarnings.forEach(warning => {
+                const warningDiv = document.createElement('div');
+                warningDiv.style.cssText = `
+                    background-color: white;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                    border-left: 4px solid #f39c12;
+                    border-radius: 4px;
+                `;
+                
+                const items = warning.items.map(item => 
+                    `<li style="margin-left: 2rem;">${item.time}: ${item.liters}L</li>`
+                ).join('');
+                
+                warningDiv.innerHTML = `
+                    <strong>🚨 Fenêtre de ${warning.start_time} à ${warning.end_time}</strong><br>
+                    Total: <strong>${warning.total_liters}L</strong> (> 1.5L) ⚠️<br>
+                    <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+                        ${items}
+                    </ul>
+                `;
+                
+                warningsList.appendChild(warningDiv);
             });
         } else {
             warningsContainer.style.display = 'none';
@@ -317,14 +337,24 @@ function updateTotalChart(records) {
         console.warn('Element totalChart non trouvé');
         return;
     }
-    
-    const sorted = records.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
-    
-    let cumulativeLiters = 0;
-    const labels = sorted.map(r => new Date(r.date).toLocaleDateString('fr-FR'));
-    const data = sorted.map(r => {
+
+    // Agréger les litres par jour (un point = un jour)
+    const dailyLitersMap = {};
+    records.forEach(r => {
+        const key = r.date;
         const liters = (r.pints * 0.5) + (r.half_pints * 0.25) + (r.liters_33 * 0.33);
-        cumulativeLiters += liters;
+        if (!dailyLitersMap[key]) {
+            dailyLitersMap[key] = 0;
+        }
+        dailyLitersMap[key] += liters;
+    });
+
+    const dates = Object.keys(dailyLitersMap).sort((a, b) => new Date(a) - new Date(b));
+
+    let cumulativeLiters = 0;
+    const labels = dates.map(d => new Date(d).toLocaleDateString('fr-FR'));
+    const data = dates.map(d => {
+        cumulativeLiters += dailyLitersMap[d];
         return parseFloat(cumulativeLiters.toFixed(2));
     });
     

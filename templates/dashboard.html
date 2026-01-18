@@ -19,9 +19,17 @@
         <div class="top-section">
             <div class="card">
                 <h3>Ajouter une consommation</h3>
-                <div class="date-select">
-                    <label for="today-date">Date</label>
-                    <input type="date" id="today-date">
+                
+                <!-- ⭐ NEW: Date et Heure -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="date-select">
+                        <label for="today-date">Date</label>
+                        <input type="date" id="today-date">
+                    </div>
+                    <div class="date-select">
+                        <label for="today-time">Heure</label>
+                        <input type="time" id="today-time">
+                    </div>
                 </div>
                 
                 <div class="beer-selector">
@@ -87,10 +95,11 @@
             </div>
         </div>
         
+        <!-- ⭐ NEW: Section des avertissements améliorée -->
         <div class="warnings-section" id="warnings-container" style="display:none;">
             <div class="card warning">
-                <h3>⚠️ Avertissement</h3>
-                <ul id="warnings-list"></ul>
+                <h3>⚠️ Alerte - Au moins 1.5L en moins de 3 heures !</h3>
+                <div id="warnings-list"></div>
             </div>
         </div>
         

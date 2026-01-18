@@ -24,19 +24,27 @@ class Database:
             )
         ''')
         
-        # Table consommation
+        # Table consommation - MODIFIÉE: ajout de la colonne 'time'
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS consumption (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 date DATE NOT NULL,
+                time TIME NOT NULL DEFAULT '00:00:00',
                 pints INTEGER DEFAULT 0,
                 half_pints INTEGER DEFAULT 0,
                 liters_33 INTEGER DEFAULT 0,
                 FOREIGN KEY (user_id) REFERENCES users(id),
-                UNIQUE(user_id, date)
+                UNIQUE(user_id, date, time)
             )
         ''')
+        
+        # ⭐ MIGRATION: Ajouter la colonne 'time' si elle n'existe pas
+        cursor.execute("PRAGMA table_info(consumption)")
+        columns = [col[1] for col in cursor.fetchall()]
+        
+        if 'time' not in columns:
+            cursor.execute('ALTER TABLE consumption ADD COLUMN time TIME DEFAULT "00:00:00"')
         
         conn.commit()
         conn.close()
@@ -106,15 +114,15 @@ class Database:
         return users
     
     @staticmethod
-    def add_consumption(user_id, date, pints=0, half_pints=0, liters_33=0):
-        """Ajouter une consommation (AJOUTER, non remplacer)"""
+    def add_consumption(user_id, date, pints=0, half_pints=0, liters_33=0, time='00:00:00'):
+        """Ajouter une consommation avec heure (AJOUTER, non remplacer)"""
         conn = Database.get_connection()
         cursor = conn.cursor()
         
-        # Vérifier si l'entrée existe
+        # Vérifier si l'entrée existe (même date ET même heure)
         cursor.execute(
-            'SELECT pints, half_pints, liters_33 FROM consumption WHERE user_id = ? AND date = ?',
-            (user_id, date)
+            'SELECT pints, half_pints, liters_33 FROM consumption WHERE user_id = ? AND date = ? AND time = ?',
+            (user_id, date, time)
         )
         existing = cursor.fetchone()
         
@@ -127,14 +135,14 @@ class Database:
             cursor.execute('''
                 UPDATE consumption 
                 SET pints = ?, half_pints = ?, liters_33 = ?
-                WHERE user_id = ? AND date = ?
-            ''', (new_pints, new_half_pints, new_liters_33, user_id, date))
+                WHERE user_id = ? AND date = ? AND time = ?
+            ''', (new_pints, new_half_pints, new_liters_33, user_id, date, time))
         else:
             # Créer une nouvelle entrée
             cursor.execute('''
-                INSERT INTO consumption (user_id, date, pints, half_pints, liters_33)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (user_id, date, pints, half_pints, liters_33))
+                INSERT INTO consumption (user_id, date, time, pints, half_pints, liters_33)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (user_id, date, time, pints, half_pints, liters_33))
         
         conn.commit()
         conn.close()
@@ -156,7 +164,7 @@ class Database:
             query += ' AND date <= ?'
             params.append(end_date)
         
-        query += ' ORDER BY date DESC'
+        query += ' ORDER BY date DESC, time DESC'
         
         cursor.execute(query, params)
         records = cursor.fetchall()

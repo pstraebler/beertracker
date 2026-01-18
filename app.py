@@ -76,11 +76,14 @@ def api_consumption():
     if request.method == 'POST':
         data = request.get_json()
         date = data.get('date', datetime.now().strftime('%Y-%m-%d'))
+        # ⭐ NEW: Récupérer l'heure depuis la requête
+        time = data.get('time', datetime.now().strftime('%H:%M:%S'))
         pints = int(data.get('pints', 0))
         half_pints = int(data.get('half_pints', 0))
         liters_33 = int(data.get('liters_33', 0))
         
-        Database.add_consumption(user_id, date, pints, half_pints, liters_33)
+        # ⭐ NEW: Passer l'heure à la fonction
+        Database.add_consumption(user_id, date, pints, half_pints, liters_33, time)
         
         return jsonify({'success': True})
     
@@ -95,7 +98,7 @@ def api_consumption():
         'total_half_pints': stats['total_half_pints'],
         'total_33cl': stats['total_33cl'],
         'total_liters': stats['total_liters'],
-        'warnings': stats['daily_warnings'],
+        'warnings': stats['warnings'],  # ⭐ NEW: Warnings avec fenêtre 3h
         'monthly_stats': stats['monthly_stats'],
         'records': [dict(record) for record in stats['all_records']]
     })
