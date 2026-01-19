@@ -419,7 +419,7 @@ function updateStatsDisplay(data) {
                 ).join('');
                 
                 warningDiv.innerHTML = `
-                    <strong>🚨 De ${formatTime(warning.start_time)} à ${formatTime(warning.end_time)}</strong><br>
+                    <strong>🚨 Depuis ${formatTime(warning.start_time)}</strong><br>
                     Total: <strong>${warning.total_liters}L</strong> (> 1.5L) ⚠️<br>
                     <ul style="margin-top: 0.5rem; margin-bottom: 0;">
                         ${items}
