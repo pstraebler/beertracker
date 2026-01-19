@@ -178,9 +178,10 @@ function changeBeer(type, value) {
 
   // Empêcher la décrémentation en mode soirée
   if (nightModeEnabled && value < 0) {
-    alert("Mode Soirée activé : impossible de décrémenter les bières");
-    return;
+    showNightModeDecrementNotification();
+  return;
   }
+
 
   // CORRECTION : Vérifier si on est déjà à 0 avant de décrémenter
   if (value < 0 && currentBeer[type] === 0) {
@@ -192,6 +193,31 @@ function changeBeer(type, value) {
   document.getElementById(type + '-count').innerText = currentBeer[type];
   saveBeerAutomatic(type, value);
 }
+
+function showNightModeDecrementNotification() {
+  const notificationDiv = document.createElement('div');
+  notificationDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #e74c3c;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 9999;
+    font-weight: bold;
+    animation: slideIn 0.3s ease-out;
+  `;
+  notificationDiv.innerText = '⚠️ Mode Soirée actif : impossible de retirer une bière 😏';
+  document.body.appendChild(notificationDiv);
+  
+  setTimeout(() => {
+    notificationDiv.style.animation = 'slideOut 0.3s ease-out';
+    setTimeout(() => notificationDiv.remove(), 300);
+  }, 5000);
+}
+
 
 // Charger la consommation du jour entier (tous créneaux)
 function loadTodayConsumption() {
