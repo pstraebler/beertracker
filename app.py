@@ -212,5 +212,53 @@ def admin_import():
                          import_success=True if imported_count > 0 else False,
                          created_users=created_users)
 
+    # Ajoute cet endpoint après les autres routes :
+
+@app.route('/api/night-mode', methods=['GET', 'POST'])
+@login_required
+def night_mode():
+    """Gérer le mode soirée"""
+    if request.method == 'GET':
+        user_id = session['user_id']
+        is_enabled = Database.get_night_mode_status(user_id)
+        return jsonify({'night_mode_enabled': is_enabled})
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        user_id = session['user_id']
+        enabled = data.get('enabled', False)
+        
+        Database.set_night_mode(user_id, enabled)
+        
+        return jsonify({
+            'success': True,
+            'night_mode_enabled': enabled
+        })
+
+# Endpoint admin pour gérer le mode soirée d'autres utilisateurs
+@app.route('/admin/night-mode/<int:user_id>', methods=['POST'])
+@admin_required
+def toggle_night_mode(user_id):
+    """Admin: Basculer le mode soirée (vrai toggle)"""
+    # Récupérer l'état actuel
+    current_state = Database.get_night_mode_status(user_id)
+    
+    # Inverser l'état
+    new_state = not current_state
+    
+    # Appliquer le changement
+    Database.set_night_mode(user_id, new_state)
+    
+    action = "activé" if new_state else "désactivé"
+    return jsonify({'success': True, 'message': f'Mode soirée {action}'})
+
+
+@app.route('/api/night-mode-status/<int:user_id>', methods=['GET'])
+@admin_required
+def get_night_mode_status(user_id):
+    """Admin: Récupère l'état du mode soirée pour un utilisateur"""
+    is_enabled = Database.get_night_mode_status(user_id)
+    return jsonify({'night_mode_enabled': is_enabled})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=False)

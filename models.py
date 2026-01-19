@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 DB_PATH = '/app/data/db.sqlite3'
@@ -42,10 +42,17 @@ class Database:
         # ⭐ MIGRATION: Ajouter la colonne 'time' si elle n'existe pas
         cursor.execute("PRAGMA table_info(consumption)")
         columns = [col[1] for col in cursor.fetchall()]
-        
+
         if 'time' not in columns:
             cursor.execute('ALTER TABLE consumption ADD COLUMN time TIME DEFAULT "00:00:00"')
-        
+
+        # ⭐ MIGRATION: Ajouter la colonne 'night_mode_until' si elle n'existe pas
+        cursor.execute("PRAGMA table_info(users)")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        if 'night_mode_until' not in columns:
+            cursor.execute('ALTER TABLE users ADD COLUMN night_mode_until TIMESTAMP DEFAULT NULL')
+            
         conn.commit()
         conn.close()
     
@@ -181,3 +188,51 @@ class Database:
         cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
         conn.commit()
         conn.close()
+
+    @staticmethod
+    def set_night_mode(user_id, enabled):
+        """Active/Désactive le mode soirée"""
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+    
+        if enabled:
+            # Mode soirée activé jusqu'à demain 7h
+            tomorrow_7am = datetime.now().replace(hour=7, minute=0, second=0, microsecond=0) + timedelta(days=1)
+            cursor.execute(
+                'UPDATE users SET night_mode_until = ? WHERE id = ?',
+                (tomorrow_7am.isoformat(), user_id)
+            )
+        else:
+            # Désactiver le mode soirée
+            cursor.execute(
+                'UPDATE users SET night_mode_until = NULL WHERE id = ?',
+                (user_id,)
+            )
+    
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def get_night_mode_status(user_id):
+        """Récupère le statut du mode soirée"""
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT night_mode_until FROM users WHERE id = ?', (user_id,))
+        result = cursor.fetchone()
+        conn.close()
+    
+        if not result or not result[0]:
+            return False
+    
+        night_mode_until = datetime.fromisoformat(result[0])
+    
+        # Si le mode soirée est expiré, le désactiver
+        if datetime.now() > night_mode_until:
+            Database.set_night_mode(user_id, False)
+            return False
+    
+        return True
+
+
+    
+    

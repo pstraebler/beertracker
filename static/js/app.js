@@ -7,6 +7,7 @@ let currentBeer = {
 let monthlyChart = null;
 let totalChart = null;
 let savingInProgress = false;
+let nightModeEnabled = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
@@ -38,7 +39,147 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     loadTodayConsumption();
+    loadNightModeStatus();
 });
+
+function loadNightModeStatus() {
+    fetch('/api/night-mode')
+        .then(response => response.json())
+        .then(data => {
+            nightModeEnabled = data.night_mode_enabled;
+            updateNightModeUI();
+        })
+        .catch(error => console.error('Erreur:', error));
+}
+
+function toggleNightMode() {
+    if (!nightModeEnabled) {
+        // Demander confirmation pour activer
+        const confirmDiv = document.createElement('div');
+        confirmDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        `;
+        
+        confirmDiv.innerHTML = `
+            <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); max-width: 400px;">
+                <h2 style="margin-bottom: 1rem; color: #2c3e50;">🌙 Activer le Mode Soirée ?</h2>
+                <p style="margin-bottom: 1rem; color: #475569;">
+                    Le mode soirée vous empêchera de :
+                </p>
+                <ul style="margin-bottom: 1.5rem; margin-left: 1.5rem; color: #475569;">
+                    <li>Décrémenter le nombre de bières</li>
+                    <li>Modifier la date</li>
+                </ul>
+                <p style="margin-bottom: 1.5rem; color: #f39c12; font-weight: bold;">
+                    ⏰ Le mode se désactivera automatiquement demain à 7h.
+                </p>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" style="flex: 1; padding: 0.75rem; background-color: #bdc3c7; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                        Annuler
+                    </button>
+                    <button onclick="activateNightMode()" style="flex: 1; padding: 0.75rem; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                        Activer
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(confirmDiv);
+    }
+}
+
+function activateNightMode() {
+    fetch('/api/night-mode', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled: true })
+    })
+    .then(response => response.json())
+    .then(data => {
+        nightModeEnabled = true;
+        updateNightModeUI();
+        document.querySelector('div[style*="rgba(0, 0, 0, 0.7)"]')?.remove();
+        showNightModeNotification();
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'activation du mode soirée');
+    });
+}
+
+function updateNightModeUI() {
+    const nightModeBtn = document.getElementById('night-mode-btn');
+    const dateInput = document.getElementById('today-date');
+    
+    if (nightModeBtn) {
+        if (nightModeEnabled) {
+            nightModeBtn.textContent = '🌙 Mode Soirée ACTIF';
+            nightModeBtn.style.backgroundColor = '#e74c3c';
+            nightModeBtn.style.color = 'white';
+            nightModeBtn.disabled = true;
+        } else {
+            nightModeBtn.textContent = '🌙 Activer Mode Soirée';
+            nightModeBtn.style.backgroundColor = '#3498db';
+            nightModeBtn.style.color = 'white';
+            nightModeBtn.disabled = false;
+        }
+    }
+    
+    if (dateInput) {
+        dateInput.disabled = nightModeEnabled;
+    }
+}
+
+function showNightModeNotification() {
+    const notificationDiv = document.createElement('div');
+    notificationDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #e74c3c;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 9999;
+        font-weight: bold;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    notificationDiv.innerHTML = `🌙 Mode Soirée activé ! Jusqu'à demain 7h.`;
+    
+    document.body.appendChild(notificationDiv);
+    
+    setTimeout(() => {
+        notificationDiv.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notificationDiv.remove(), 300);
+    }, 3000);
+}
+
+// Modifie la fonction changeBeer pour empêcher la décrémentation en mode soirée :
+function changeBeer(type, value) {
+    // Empêcher la décrémentation en mode soirée
+    if (nightModeEnabled && value < 0) {
+        alert('❌ Mode Soirée activé : impossible de décrémenter les bières');
+        return;
+    }
+    
+    currentBeer[type] = Math.max(0, currentBeer[type] + value);
+    document.getElementById(`${type}-count`).innerText = currentBeer[type];
+    
+    saveBeerAutomatic(type, value);
+}
 
 // Charger la consommation du jour entier (tous créneaux)
 function loadTodayConsumption() {
@@ -72,13 +213,6 @@ function loadTodayConsumption() {
         .catch(error => {
             console.error('Erreur lors du chargement:', error);
         });
-}
-
-function changeBeer(type, value) {
-    currentBeer[type] = Math.max(0, currentBeer[type] + value);
-    document.getElementById(`${type}-count`).innerText = currentBeer[type];
-    
-    saveBeerAutomatic(type, value);
 }
 
 // Enregistrer automatiquement avec heure actuelle
