@@ -8,6 +8,7 @@ let monthlyChart = null;
 let totalChart = null;
 let savingInProgress = false;
 let nightModeEnabled = false;
+let lastClickTime = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
@@ -169,22 +170,27 @@ function showNightModeNotification() {
 
 // Modifie la fonction changeBeer pour empêcher la décrémentation en mode soirée :
 function changeBeer(type, value) {
-    // Empêcher la décrémentation en mode soirée
-    if (nightModeEnabled && value < 0) {
-        alert('❌ Mode Soirée activé : impossible de décrémenter les bières');
-        return;
-    }
-    
-    // ⭐ CORRECTION : Vérifier si on est déjà à 0 avant de décrémenter
-    if (value < 0 && currentBeer[type] === 0) {
-        // Ne rien faire si on essaie de décrémenter une quantité déjà à 0
-        return;
-    }
-    
-    currentBeer[type] = Math.max(0, currentBeer[type] + value);
-    document.getElementById(`${type}-count`).innerText = currentBeer[type];
-    
-    saveBeerAutomatic(type, value);
+  const now = Date.now();
+  if (now - lastClickTime < 3000) {
+    return; // Ignore le clic si moins de 3 secondes
+  }
+  lastClickTime = now;
+
+  // Empêcher la décrémentation en mode soirée
+  if (nightModeEnabled && value < 0) {
+    alert("Mode Soirée activé : impossible de décrémenter les bières");
+    return;
+  }
+
+  // CORRECTION : Vérifier si on est déjà à 0 avant de décrémenter
+  if (value < 0 && currentBeer[type] === 0) {
+    // Ne rien faire si on essaie de décrémenter une quantité déjà à 0
+    return;
+  }
+
+  currentBeer[type] = Math.max(0, currentBeer[type] + value);
+  document.getElementById(type + '-count').innerText = currentBeer[type];
+  saveBeerAutomatic(type, value);
 }
 
 // Charger la consommation du jour entier (tous créneaux)
