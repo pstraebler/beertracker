@@ -256,6 +256,17 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.date-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+}
+.date-section .date-select {
+  margin-bottom: 0;
+}
+
 .date-select label {
     display: block;
     margin-bottom: 0.5rem;

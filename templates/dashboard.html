@@ -19,24 +19,15 @@
         <div class="top-section">
             <div class="card">
                 <h3>Ajouter une consommation</h3>
-                
-                <!-- ⭐ NEW: Date et Heure -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div class="date-select">
-                        <label for="today-date">Date</label>
-                        <input type="date" id="today-date">
-                    </div>
-<!--                    <div class="date-select">
-                        <label for="today-time">Heure</label>
-                        <input type="time" id="today-time">
-</div>-->
-                        <div style="margin-bottom: 1.5rem;">
-                            <button id="night-mode-btn" class="btn-primary" onclick="toggleNightMode()" style="background-color: #3498db; width: 100%;">
-                                🌙 Activer Mode Soirée
-                            </button>
+                     <div class="date-section">
+                        <div class="date-select">
+                            <label for="today-date">Date</label>
+                            <input type="date" id="today-date">
                         </div>
-
-                </div>
+                        <button id="night-mode-btn" class="btn-primary" onclick="toggleNightMode()" style="background-color: #3498db; width: auto; padding: 0.75rem 1.5rem;">
+                            🌙 Activer Mode Soirée
+                        </button>
+                    </div>
                 
                 <div class="beer-selector">
                     <div class="beer-type">
