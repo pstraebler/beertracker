@@ -68,8 +68,8 @@
                                     <input type="password" name="password" placeholder="Nouveau mot de passe" required>
                                     <button type="submit" class="btn-secondary btn-sm">Changer MDP</button>
                                 </form>
-                                <button onclick="toggleAdminNightMode({{ user.id }}, '{{ user.username }}')" class="btn-sm" style="background-color: #f39c12; color: white;">
-                                    🌙 Mode Soirée
+                                <button onclick="toggleAdminNightMode('{{ user.id }}', '{{ user.username|e }}')" class="btn-sm" style="background-color: #f39c12; color: white;">
+                                        🌙 Mode Soirée
                                 </button>
                                 <form method="POST" action="/admin/user/{{ user.id }}/delete" class="inline-form" onsubmit="return confirm('Êtes-vous sûr ?');">
                                     <button type="submit" class="btn-danger btn-sm">Supprimer</button>
