@@ -12,7 +12,7 @@ def calculate_stats(user_id, start_date=None, end_date=None):
     total_half_pints = 0
     total_33cl = 0
     total_liters = 0
-    three_hour_warnings = []  # ⭐ NEW: Avertissements basés sur fenêtres 3h
+    three_hour_warnings = []
     today_str = date.today().isoformat()
     monthly_stats = {}
     
@@ -25,77 +25,87 @@ def calculate_stats(user_id, start_date=None, end_date=None):
         total_half_pints += half_pints
         total_33cl += liters_33
         
-        # Calculer les litres (1 pinte = 0.5L, 1 demi = 0.25L, 1x33cl = 0.33L)
         daily_liters = (pints * 0.5) + (half_pints * 0.25) + (liters_33 * 0.33)
         total_liters += daily_liters
         
-        # Stats par mois
-        month_key = record['date'][:7]  # YYYY-MM
+        month_key = record['date'][:7]
         if month_key not in monthly_stats:
             monthly_stats[month_key] = {'pints': 0, 'half_pints': 0, '33cl': 0}
         monthly_stats[month_key]['pints'] += pints
         monthly_stats[month_key]['half_pints'] += half_pints
         monthly_stats[month_key]['33cl'] += liters_33
     
-    # ⭐ NOUVEAU: Détection des dépassements dans les fenêtres de 3h
-    # On ne considère que les enregistrements d'aujourd'hui
+    # ⭐ OPTIMISATION: Une seule fenêtre 3h par groupe consécutif
     if records:
         today_records = [r for r in records if r['date'] == today_str]
         
-        # Pour chaque enregistrement, vérifier les 3h suivantes
-        for i, record in enumerate(today_records):
-            record_time = datetime.strptime(record['time'], '%H:%M:%S').time()
-            record_datetime = datetime.combine(datetime.strptime(record['date'], '%Y-%m-%d').date(), record_time)
+        if today_records:
+            processed_times = set()
             
-            # Fenêtre: de record_time à record_time + 3 heures
-            window_end = record_datetime + timedelta(hours=3)
-            
-            # Chercher tous les enregistrements dans cette fenêtre (y compris celui-ci)
-            window_liters = 0
-            window_items = []
-            
-            for other_record in today_records:
-                other_time = datetime.strptime(other_record['time'], '%H:%M:%S').time()
-                other_datetime = datetime.combine(datetime.strptime(other_record['date'], '%Y-%m-%d').date(), other_time)
+            for record in sorted(today_records, key=lambda r: r['time']):
+                record_time_str = record['time']
                 
-                # Si l'enregistrement est dans la fenêtre de 3h
-                if record_datetime <= other_datetime <= window_end:
-                    other_pints = other_record['pints'] or 0
-                    other_half = other_record['half_pints'] or 0
-                    other_33 = other_record['liters_33'] or 0
-                    
-                    other_liters = (other_pints * 0.5) + (other_half * 0.25) + (other_33 * 0.33)
-                    window_liters += other_liters
-                    window_items.append({
-                        'time': other_record['time'],
-                        'liters': round(other_liters, 2)
-                    })
-            
-            # ⭐ ALERTE: Si le total dans la fenêtre 3h >= 1.5L
-            if window_liters >= 1.5:
-                # Vérifier qu'on n'a pas déjà cet avertissement (pour éviter les doublons)
-                warning_exists = any(
-                    w['start_time'] == record['time'] and 
-                    w['total_liters'] == round(window_liters, 2)
-                    for w in three_hour_warnings
+                # Sauter si on a déjà traité cette heure
+                if record_time_str in processed_times:
+                    continue
+                
+                record_time = datetime.strptime(record_time_str, '%H:%M:%S').time()
+                record_datetime = datetime.combine(
+                    datetime.strptime(record['date'], '%Y-%m-%d').date(), 
+                    record_time
                 )
                 
-                if not warning_exists:
+                # Fenêtre: de record_time à record_time + 3 heures
+                window_end = record_datetime + timedelta(hours=3)
+                
+                # Chercher tous les enregistrements dans cette fenêtre
+                window_liters = 0
+                window_items = []
+                window_times = []
+                
+                for other_record in today_records:
+                    other_time_str = other_record['time']
+                    other_time = datetime.strptime(other_time_str, '%H:%M:%S').time()
+                    other_datetime = datetime.combine(
+                        datetime.strptime(other_record['date'], '%Y-%m-%d').date(), 
+                        other_time
+                    )
+                    
+                    # Si l'enregistrement est dans la fenêtre de 3h
+                    if record_datetime <= other_datetime <= window_end:
+                        other_pints = other_record['pints'] or 0
+                        other_half = other_record['half_pints'] or 0
+                        other_33 = other_record['liters_33'] or 0
+                        
+                        other_liters = (other_pints * 0.5) + (other_half * 0.25) + (other_33 * 0.33)
+                        window_liters += other_liters
+                        window_items.append({
+                            'time': other_time_str,
+                            'liters': round(other_liters, 2)
+                        })
+                        window_times.append(other_time_str)
+                
+                # ⭐ Créer l'avertissement seulement si dépassement ET première fois
+                if window_liters >= 1.5:
                     three_hour_warnings.append({
-                        'start_time': record['time'],
+                        'start_time': record_time_str,
                         'end_time': window_end.strftime('%H:%M:%S'),
                         'total_liters': round(window_liters, 2),
                         'start_date': record['date'],
                         'end_date': window_end.strftime('%Y-%m-%d'),
                         'items': window_items
                     })
+                    
+                    # Marquer tous les enregistrements de cette fenêtre comme traités
+                    for time_str in window_times:
+                        processed_times.add(time_str)
     
     return {
         'total_pints': total_pints,
         'total_half_pints': total_half_pints,
         'total_33cl': total_33cl,
         'total_liters': round(total_liters, 2),
-        'warnings': three_hour_warnings,  # ⭐ NEW
+        'warnings': three_hour_warnings,
         'monthly_stats': monthly_stats,
         'all_records': records
     }

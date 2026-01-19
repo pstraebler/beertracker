@@ -199,6 +199,12 @@ function loadStats() {
         .catch(error => console.error('Erreur:', error));
 }
 
+// Fonction pour formater l'heure en format court (14h56)
+function formatTime(timeString) {
+    const [hours, minutes] = timeString.split(':');
+    return `${hours}h${minutes}`;
+}
+
 function updateStatsDisplay(data) {
     const totalPintsEl = document.getElementById('total-pints');
     const totalHalfEl = document.getElementById('total-half');
@@ -241,7 +247,7 @@ function updateStatsDisplay(data) {
                 ).join('');
                 
                 warningDiv.innerHTML = `
-                    <strong>🚨 Fenêtre de ${warning.start_time} à ${warning.end_time}</strong><br>
+                    <strong>🚨 De ${formatTime(warning.start_time)} à ${formatTime(warning.end_time)}</strong><br>
                     Total: <strong>${warning.total_liters}L</strong> (> 1.5L) ⚠️<br>
                     <ul style="margin-top: 0.5rem; margin-bottom: 0;">
                         ${items}
