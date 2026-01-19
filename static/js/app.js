@@ -175,6 +175,12 @@ function changeBeer(type, value) {
         return;
     }
     
+    // ⭐ CORRECTION : Vérifier si on est déjà à 0 avant de décrémenter
+    if (value < 0 && currentBeer[type] === 0) {
+        // Ne rien faire si on essaie de décrémenter une quantité déjà à 0
+        return;
+    }
+    
     currentBeer[type] = Math.max(0, currentBeer[type] + value);
     document.getElementById(`${type}-count`).innerText = currentBeer[type];
     
