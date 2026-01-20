@@ -4,9 +4,12 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./data:/app/data
+      - beertracker_data:/app/data
     environment:
       - FLASK_ENV=production
       - FLASK_APP=app.py
     command: python app.py
 
+volumes:
+  beertracker_data:
+    driver: local
