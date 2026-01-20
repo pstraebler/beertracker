@@ -2,6 +2,7 @@ import sqlite3
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+import uuid
 
 DB_PATH = '/app/data/db.sqlite3'
 
@@ -14,21 +15,22 @@ class Database:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
-        # Table utilisateurs
+       # Table utilisateurs avec UUID comme clé primaire
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id TEXT PRIMARY KEY,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                night_mode_until TIMESTAMP DEFAULT NULL
             )
         ''')
         
-        # Table consommation - MODIFIÉE: ajout de la colonne 'time'
+        # Table consommation avec user_id en TEXT pour UUID
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS consumption (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
+                user_id TEXT NOT NULL,
                 date DATE NOT NULL,
                 time TIME NOT NULL DEFAULT '00:00:00',
                 pints INTEGER DEFAULT 0,
@@ -75,23 +77,27 @@ class Database:
     
     @staticmethod
     def get_user_id(username):
-        """Obtenir l'ID d'un utilisateur"""
+        """Obtenir l'ID (UUID) d'un utilisateur"""
         conn = Database.get_connection()
         cursor = conn.cursor()
         cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
         result = cursor.fetchone()
         conn.close()
-        return result[0] if result else None
-    
+        return result[0] if result else None  # ⭐ Retourne un UUID string
+
     @staticmethod
     def create_user(username, password):
-        """Créer un nouvel utilisateur"""
+        """Créer un nouvel utilisateur avec UUID aléatoire"""
+        import uuid
         conn = Database.get_connection()
         cursor = conn.cursor()
         try:
+            # ⭐ Générer un UUID v4 aléatoire
+            user_id = str(uuid.uuid4())
+        
             cursor.execute(
-                'INSERT INTO users (username, password) VALUES (?, ?)',
-                (username, password)
+                'INSERT INTO users (id, username, password) VALUES (?, ?, ?)',
+                (user_id, username, password)
             )
             conn.commit()
             conn.close()
