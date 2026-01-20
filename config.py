@@ -5,7 +5,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'sqlite:////app/data/db.sqlite3'
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = False  # À mettre à True en HTTPS
-    PERMANENT_SESSION_LIFETIME = 86400 * 30  # 30 jours
+    PERMANENT_SESSION_LIFETIME = 86400 * 3  # 3 jours
     
     # Admin credentials
     ADMIN_USERNAME = 'admin'
