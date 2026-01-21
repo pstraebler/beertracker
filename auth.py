@@ -4,11 +4,13 @@ import hashlib
 
 def hash_password(password):
     """Hasher un mot de passe"""
-    return hashlib.sha256(password.encode()).hexdigest()
+    clean_password = password.strip()
+    return hashlib.sha256(clean_password.encode('utf-8')).hexdigest()
 
 def verify_password(password, hash):
     """Vérifier un mot de passe"""
-    return hash_password(password) == hash
+    clean_password = password.strip()
+    return hash_password(clean_password) == hash
 
 def verify_user_exists(user_id):
     """Vérifier qu'un utilisateur existe toujours en base de données"""
