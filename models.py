@@ -41,20 +41,6 @@ class Database:
             )
         ''')
         
-        # ⭐ MIGRATION: Ajouter la colonne 'time' si elle n'existe pas
-        cursor.execute("PRAGMA table_info(consumption)")
-        columns = [col[1] for col in cursor.fetchall()]
-
-        if 'time' not in columns:
-            cursor.execute('ALTER TABLE consumption ADD COLUMN time TIME DEFAULT "00:00:00"')
-
-        # ⭐ MIGRATION: Ajouter la colonne 'night_mode_until' si elle n'existe pas
-        cursor.execute("PRAGMA table_info(users)")
-        columns = [col[1] for col in cursor.fetchall()]
-
-        if 'night_mode_until' not in columns:
-            cursor.execute('ALTER TABLE users ADD COLUMN night_mode_until TIMESTAMP DEFAULT NULL')
-            
         conn.commit()
         conn.close()
     
@@ -83,7 +69,7 @@ class Database:
         cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
         result = cursor.fetchone()
         conn.close()
-        return result[0] if result else None  # ⭐ Retourne un UUID string
+        return result[0] if result else None  # Retourne un UUID string
 
     @staticmethod
     def create_user(username, password):
@@ -92,7 +78,7 @@ class Database:
         conn = Database.get_connection()
         cursor = conn.cursor()
         try:
-            # ⭐ Générer un UUID v4 aléatoire
+            # Générer un UUID v4 aléatoire
             user_id = str(uuid.uuid4())
         
             cursor.execute(

@@ -28,8 +28,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('login'))
-        
-        # ⭐ Vérifier l'existence de l'utilisateur
+
         if not verify_user_exists(session['user_id']):
             session.clear()
             return redirect(url_for('login'))

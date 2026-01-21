@@ -35,7 +35,6 @@ def calculate_stats(user_id, start_date=None, end_date=None):
         monthly_stats[month_key]['half_pints'] += half_pints
         monthly_stats[month_key]['33cl'] += liters_33
     
-    # ⭐ OPTIMISATION: Une seule fenêtre 3h par groupe consécutif
     if records:
         today_records = [r for r in records if r['date'] == today_str]
         
@@ -85,7 +84,7 @@ def calculate_stats(user_id, start_date=None, end_date=None):
                         })
                         window_times.append(other_time_str)
                 
-                # ⭐ Créer l'avertissement seulement si dépassement ET première fois
+                # Créer l'avertissement seulement si dépassement ET première fois
                 if window_liters >= 1.5:
                     three_hour_warnings.append({
                         'start_time': record_time_str,
@@ -183,7 +182,7 @@ def import_csv(file_content, user_id=None, all_users=False):
                 errors.append(f"Erreur ligne {imported_count + 1}: Date vide")
                 continue
             
-            # ⭐ NEW: Récupérer l'heure depuis le CSV (ou utiliser 00:00:00)
+            # Récupérer l'heure depuis le CSV (ou utiliser 00:00:00)
             time = row.get('Heure', '00:00:00').strip()
             if not time:
                 time = '00:00:00'

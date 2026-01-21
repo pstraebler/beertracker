@@ -183,7 +183,7 @@ function changeBeer(type, value) {
   }
 
 
-  // CORRECTION : Vérifier si on est déjà à 0 avant de décrémenter
+  // Vérifier si on est déjà à 0 avant de décrémenter
   if (value < 0 && currentBeer[type] === 0) {
     // Ne rien faire si on essaie de décrémenter une quantité déjà à 0
     return;
@@ -352,6 +352,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// ??
 function saveBeer() {
     alert('Les bières sont maintenant enregistrées automatiquement ! 🍺');
 }
