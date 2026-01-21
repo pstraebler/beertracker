@@ -12,7 +12,6 @@ let lastClickTime = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
-    const now = new Date().toTimeString().slice(0, 5); // HH:MM
     
     const todayInput = document.getElementById('today-date');
     const startDateInput = document.getElementById('start-date');
@@ -351,11 +350,6 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
-// ??
-function saveBeer() {
-    alert('Les bières sont maintenant enregistrées automatiquement ! 🍺');
-}
 
 function loadStats() {
     const startDate = document.getElementById('start-date')?.value || '';

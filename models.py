@@ -1,6 +1,5 @@
 import sqlite3
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 import uuid
 
@@ -74,7 +73,6 @@ class Database:
     @staticmethod
     def create_user(username, password):
         """Créer un nouvel utilisateur avec UUID aléatoire"""
-        import uuid
         conn = Database.get_connection()
         cursor = conn.cursor()
         try:
