@@ -382,11 +382,19 @@ function updateStatsDisplay(data) {
     const totalHalfEl = document.getElementById('total-half');
     const total33El = document.getElementById('total-33');
     const totalLitersEl = document.getElementById('total-liters');
+    const totalCostEl = document.getElementById('total-cost');
     
     if (totalPintsEl) totalPintsEl.innerText = data.total_pints;
     if (totalHalfEl) totalHalfEl.innerText = data.total_half_pints;
     if (total33El) total33El.innerText = data.total_33cl;
     if (totalLitersEl) totalLitersEl.innerText = data.total_liters;
+
+    // 0.5L coûte 6€, donc 1L = 12€
+    if (totalCostEl) {
+        const costPerLiter = 12; // 6€ pour 0.5L
+        const totalCost = (data.total_liters * costPerLiter).toFixed(2);
+        totalCostEl.innerText = totalCost;
+    }
     
     const warningsContainer = document.getElementById('warnings-container');
     const warningsList = document.getElementById('warnings-list');
