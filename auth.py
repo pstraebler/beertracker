@@ -1,16 +1,18 @@
 from functools import wraps
 from flask import session, redirect, url_for
-import hashlib
+from flask_bcrypt import Bcrypt
+
+bcrypt = Bcrypt()
 
 def hash_password(password):
-    """Hasher un mot de passe"""
+    """Hasher un mot de passe avec bcrypt"""
     clean_password = password.strip()
-    return hashlib.sha256(clean_password.encode('utf-8')).hexdigest()
+    return bcrypt.generate_password_hash(clean_password).decode('utf-8')
 
 def verify_password(password, hash):
     """Vérifier un mot de passe"""
     clean_password = password.strip()
-    return hash_password(clean_password) == hash
+    return bcrypt.check_password_hash(hash, clean_password)
 
 def verify_user_exists(user_id):
     """Vérifier qu'un utilisateur existe toujours en base de données"""
@@ -28,7 +30,8 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('login'))
-
+        
+        # ⭐ Vérifier l'existence de l'utilisateur
         if not verify_user_exists(session['user_id']):
             session.clear()
             return redirect(url_for('login'))

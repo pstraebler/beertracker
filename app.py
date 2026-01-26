@@ -5,9 +5,11 @@ from auth import hash_password, verify_password, login_required, admin_required
 from utils import calculate_stats, export_csv, import_csv, get_top_drinkers
 from config import Config
 import io
+from auth import bcrypt
 
 app = Flask(__name__)
 app.config.from_object(Config)
+bcrypt.init_app(app)
 
 # Initialiser la base de données au démarrage
 Database.init_db()
