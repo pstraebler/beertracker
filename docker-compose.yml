@@ -5,6 +5,7 @@ services:
       - "8080:8080"
     volumes:
       - beertracker_data:/app/data
+      - ./secrets/admin_password:/etc/secrets/admin_password:ro
     environment:
       - FLASK_ENV=production
       - FLASK_APP=app.py

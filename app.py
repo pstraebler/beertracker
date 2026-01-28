@@ -27,7 +27,7 @@ def login():
         password = request.form.get('password', '').strip()
         
         # Vérifier si c'est l'admin
-        if username == Config.ADMIN_USERNAME and password == Config.ADMIN_PASSWORD:
+        if username == Config.ADMIN_USERNAME and password == Config.get_admin_password():
             session['user_id'] = 0
             session['username'] = 'admin'
             session['is_admin'] = True
