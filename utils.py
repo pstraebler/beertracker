@@ -99,6 +99,35 @@ def calculate_stats(user_id, start_date=None, end_date=None):
                     for time_str in window_times:
                         processed_times.add(time_str)
     
+    # Vérifier si c'est le 3ème jour de la semaine
+    is_third_day, drinking_days = check_weekly_drinking_days(user_id, today_str)
+    
+    is_third_day_or_more, drinking_days = check_weekly_drinking_days(user_id, today_str)
+    
+    if is_third_day_or_more:
+        # Formater les jours en français
+        days_fr = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+        day_names = []
+        
+        for day_str in sorted(drinking_days):
+            day_obj = datetime.strptime(day_str, '%Y-%m-%d')
+            day_names.append(days_fr[day_obj.weekday()])
+        
+        # Nombre de jours de consommation
+        num_days = len(drinking_days)
+        
+        # Ajouter un avertissement dans le même format que les 3h
+        three_hour_warnings.append({
+            'start_time': '00:00:00',
+            'end_time': '23:59:59',
+            'total_liters': 0,
+            'start_date': today_str,
+            'end_date': today_str,
+            'items': [],
+            'type': 'weekly',
+            'message': f"⚠️ {num_days} jours de consommation cette semaine ({', '.join(day_names)})"
+        })
+    
     return {
         'total_pints': total_pints,
         'total_half_pints': total_half_pints,
@@ -220,3 +249,43 @@ def get_top_drinkers():
     conn.close()
     
     return drinkers
+
+def check_weekly_drinking_days(user_id, current_date):
+    """
+    Vérifie si c'est le 3ème jour de consommation de la semaine (lundi-dimanche).
+    Retourne (is_third_day, drinking_days)
+    """
+    from datetime import datetime, timedelta
+    from models import Database
+    
+    if isinstance(current_date, str):
+        current_date_obj = datetime.strptime(current_date, '%Y-%m-%d').date()
+    else:
+        current_date_obj = current_date
+    
+    # Trouver le lundi de la semaine courante
+    days_since_monday = current_date_obj.weekday()  # 0 = lundi, 6 = dimanche
+    week_start = current_date_obj - timedelta(days=days_since_monday)
+    week_end = week_start + timedelta(days=6)
+    
+    # Récupérer tous les jours de consommation de la semaine
+    conn = Database.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT date 
+        FROM consumption 
+        WHERE user_id = ? 
+        AND date >= ? 
+        AND date <= ?
+        ORDER BY date
+    """, (user_id, week_start.isoformat(), week_end.isoformat()))
+    
+    drinking_days = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    
+    # Si le jour courant n'est pas encore dans la liste, l'ajouter
+    current_date_str = current_date_obj.isoformat()
+    if current_date_str not in drinking_days:
+        drinking_days.append(current_date_str)
+    
+    return len(drinking_days) >= 3, drinking_days

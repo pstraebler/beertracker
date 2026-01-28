@@ -383,10 +383,9 @@ function updateStatsDisplay(data) {
     if (totalHalfEl) totalHalfEl.innerText = data.total_half_pints;
     if (total33El) total33El.innerText = data.total_33cl;
     if (totalLitersEl) totalLitersEl.innerText = data.total_liters;
-
-    // 0.5L coûte 6€, donc 1L = 12€
+    
     if (totalCostEl) {
-        const costPerLiter = 12; // 6€ pour 0.5L
+        const costPerLiter = 12;
         const totalCost = (data.total_liters * costPerLiter).toFixed(2);
         totalCostEl.innerText = totalCost;
     }
@@ -395,19 +394,26 @@ function updateStatsDisplay(data) {
     const warningsList = document.getElementById('warnings-list');
     
     if (warningsContainer && warningsList) {
-        // Filtrer les avertissements : garder seulement ceux dont la fenêtre de 3h n'est pas expirée
         const now = new Date();
-        const activeWarnings = data.warnings.filter(warning => {
-            // Construire la date/heure de fin en format correct
+        
+        // Séparer les avertissements hebdomadaires et les 3h
+        const weeklyWarnings = data.warnings.filter(w => w.type === 'weekly');
+        const threeHourWarnings = data.warnings.filter(w => w.type !== 'weekly');
+        
+        // Filtrer les avertissements 3h expirés
+        const activeThreeHourWarnings = threeHourWarnings.filter(warning => {
             const endDateTime = new Date(warning.end_date + 'T' + warning.end_time);
-            return now < endDateTime;
+            return now <= endDateTime;
         });
         
-        if (activeWarnings && activeWarnings.length > 0) {
+        // Combiner tous les avertissements actifs
+        const allWarnings = [...weeklyWarnings, ...activeThreeHourWarnings];
+        
+        if (allWarnings.length > 0) {
             warningsContainer.style.display = 'block';
             warningsList.innerHTML = '';
             
-            activeWarnings.forEach(warning => {
+            allWarnings.forEach(warning => {
                 const warningDiv = document.createElement('div');
                 warningDiv.style.cssText = `
                     background-color: white;
@@ -417,17 +423,25 @@ function updateStatsDisplay(data) {
                     border-radius: 4px;
                 `;
                 
-                const items = warning.items.map(item => 
-                    `<li style="margin-left: 2rem;">${item.time}: ${item.liters}L</li>`
-                ).join('');
-                
-                warningDiv.innerHTML = `
-                    <strong>🚨 Depuis ${formatTime(warning.start_time)}</strong><br>
-                    Total: <strong>${warning.total_liters}L</strong> (> 1.5L) ⚠️<br>
-                    <ul style="margin-top: 0.5rem; margin-bottom: 0;">
-                        ${items}
-                    </ul>
-                `;
+                if (warning.type === 'weekly') {
+                    // Avertissement 3ème jour
+                    warningDiv.innerHTML = `
+                        <strong style="font-size: 1.1rem;">${warning.message}</strong>
+                    `;
+                } else {
+                    // Avertissement 3h (existant)
+                    const items = warning.items.map(item => 
+                        `<li style="margin-left: 2rem">${item.time}: ${item.liters}L</li>`
+                    ).join('');
+                    
+                    warningDiv.innerHTML = `
+                        <strong>⚠️ Plus de 1.5L bu depuis ${formatTime(warning.start_time)}</strong><br>
+                        Total: <strong>${warning.total_liters}L</strong><br>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+                            ${items}
+                        </ul>
+                    `;
+                }
                 
                 warningsList.appendChild(warningDiv);
             });
