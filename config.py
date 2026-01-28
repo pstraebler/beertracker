@@ -35,11 +35,11 @@ class Config:
         # Fallback sur variable d'environnement (moins sécurisé)
         env_password = os.environ.get('ADMIN_PASSWORD')
         if env_password:
-            print("⚠️  ATTENTION: Mot de passe lu depuis variable d'environnement")
+            print("⚠️  ATTENTION: Mot de passe admin lu depuis variable d'environnement")
             return env_password
         
         # Dernière option: valeur par défaut (dev uniquement)
-        print("⚠️  ATTENTION: Utilisation du mot de passe par défaut!")
+        print("⚠️  ATTENTION: Utilisation du mot de passe admin par défaut!")
         return 'admin123'
     
      # Charger le mot de passe au démarrage et le stocker comme attribut de classe
