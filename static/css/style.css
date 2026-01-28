@@ -4,6 +4,7 @@
     box-sizing: border-box;
 }
 
+
 :root {
     --primary-color: #2c3e50;
     --secondary-color: #3498db;
@@ -16,6 +17,7 @@
     --danger-color: #e74c3c;
 }
 
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     background-color: var(--bg-color);
@@ -23,12 +25,14 @@ body {
     line-height: 1.6;
 }
 
+
 .navbar {
     background-color: var(--primary-color);
     color: white;
     padding: 1rem 0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
 
 .navbar-content {
     max-width: 1200px;
@@ -39,9 +43,11 @@ body {
     align-items: center;
 }
 
+
 .navbar h2 {
     font-size: 1.5rem;
 }
+
 
 .container {
     max-width: 1200px;
@@ -49,13 +55,17 @@ body {
     padding: 0 1rem;
 }
 
+
 .card {
     background: white;
     border-radius: 8px;
     padding: 2rem;
     margin-bottom: 2rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    position: relative;
 }
+
 
 .card h3 {
     margin-bottom: 1.5rem;
@@ -64,11 +74,13 @@ body {
     padding-bottom: 0.5rem;
 }
 
+
 .card h4 {
     margin-top: 1rem;
     margin-bottom: 1rem;
     color: var(--primary-color);
 }
+
 
 /* LOGIN PAGE */
 .login-page {
@@ -79,12 +91,14 @@ body {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
 }
 
+
 .login-container {
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 
 .login-box {
     background: white;
@@ -95,15 +109,18 @@ body {
     max-width: 400px;
 }
 
+
 .login-box h1 {
     text-align: center;
     margin-bottom: 2rem;
     color: var(--primary-color);
 }
 
+
 .form-group {
     margin-bottom: 1.5rem;
 }
+
 
 .form-group label {
     display: block;
@@ -111,6 +128,7 @@ body {
     font-weight: 600;
     color: var(--primary-color);
 }
+
 
 .form-group input,
 .form-group select {
@@ -122,11 +140,13 @@ body {
     transition: border-color 0.3s;
 }
 
+
 .form-group input:focus {
     outline: none;
     border-color: var(--secondary-color);
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
+
 
 .error {
     background-color: #fadbd8;
@@ -136,6 +156,7 @@ body {
     margin-bottom: 1rem;
     border-left: 4px solid var(--danger-color);
 }
+
 
 /* BUTTONS */
 .btn-primary,
@@ -152,6 +173,7 @@ body {
     font-weight: 600;
 }
 
+
 .btn-primary {
     background-color: var(--secondary-color);
     color: white;
@@ -159,29 +181,35 @@ body {
     margin-top: 1rem;
 }
 
+
 .btn-primary:hover {
     background-color: #2980b9;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
+
 .btn-secondary {
     background-color: var(--border-color);
     color: var(--primary-color);
 }
 
+
 .btn-secondary:hover {
     background-color: #95a5a6;
 }
+
 
 .btn-danger {
     background-color: var(--danger-color);
     color: white;
 }
 
+
 .btn-danger:hover {
     background-color: #c0392b;
 }
+
 
 .btn-plus, .btn-minus {
     background-color: var(--secondary-color);
@@ -194,14 +222,17 @@ body {
     justify-content: center;
 }
 
+
 .btn-plus:hover, .btn-minus:hover {
     background-color: #2980b9;
 }
+
 
 .btn-sm {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
 }
+
 
 .inline-form {
     display: flex;
@@ -209,10 +240,12 @@ body {
     align-items: center;
 }
 
+
 .inline-form input {
     flex: 1;
     min-width: 150px;
 }
+
 
 /* BEER SELECTOR */
 .beer-selector {
@@ -222,6 +255,7 @@ body {
     margin: 1.5rem 0;
 }
 
+
 .beer-type {
     text-align: center;
     padding: 1rem;
@@ -230,12 +264,14 @@ body {
     border: 2px solid var(--border-color);
 }
 
+
 .beer-type label {
     display: block;
     margin-bottom: 1rem;
     font-weight: 600;
     color: var(--primary-color);
 }
+
 
 .quantity-control {
     display: flex;
@@ -244,6 +280,7 @@ body {
     gap: 1rem;
 }
 
+
 .quantity-control span {
     font-size: 1.5rem;
     font-weight: bold;
@@ -251,10 +288,12 @@ body {
     color: var(--secondary-color);
 }
 
+
 /* DATE SELECTOR */
 .date-select {
     margin-bottom: 1.5rem;
 }
+
 
 .date-section {
   display: grid;
@@ -267,11 +306,13 @@ body {
   margin-bottom: 0;
 }
 
+
 .date-select label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
 }
+
 
 .date-select input {
     padding: 0.75rem;
@@ -281,6 +322,7 @@ body {
     max-width: 300px;
 }
 
+
 .date-range {
     display: flex;
     gap: 1rem;
@@ -289,15 +331,18 @@ body {
     flex-wrap: wrap;
 }
 
+
 .date-range input {
     padding: 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
 }
 
+
 .date-range button {
     margin-top: 0;
 }
+
 
 /* STATS GRID */
 .stats-grid {
@@ -307,6 +352,7 @@ body {
     margin-top: 1.5rem;
 }
 
+
 .stat-box {
     background: linear-gradient(135deg, var(--secondary-color), #2980b9);
     color: white;
@@ -315,34 +361,41 @@ body {
     text-align: center;
 }
 
+
 .stat-label {
     font-size: 0.9rem;
     opacity: 0.9;
     margin-bottom: 0.5rem;
 }
 
+
 .stat-value {
     font-size: 2rem;
     font-weight: bold;
 }
+
 
 /* WARNINGS */
 .warnings-section {
     margin: 2rem 0;
 }
 
+
 .card.warning {
     border-left: 4px solid var(--warning-color);
     background-color: #fef5e7;
 }
 
+
 .card.warning h3 {
     color: var(--warning-color);
 }
 
+
 #warnings-list {
     list-style: none;
 }
+
 
 #warnings-list li {
     padding: 0.75rem;
@@ -352,17 +405,45 @@ body {
     border-left: 3px solid var(--warning-color);
 }
 
+
 /* CHARTS */
 .charts-section {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 2rem;
+    margin-bottom: 2rem;
 }
+
+
+.card canvas {
+    display: block;
+    max-height: 300px !important;
+    width: 100% !important;
+}
+
+
+.card > div[style*="height"] {
+    height: 300px !important;
+    max-height: 300px !important;
+    overflow: hidden;
+    position: relative;
+}
+
+
+/* EXPORT SECTION */
+.export-section {
+    clear: both;
+    margin-top: 3rem;
+    position: relative;
+    z-index: 100;
+}
+
 
 /* ADMIN STYLES */
 .admin-section {
     margin-bottom: 2rem;
 }
+
 
 .admin-form {
     margin-bottom: 2rem;
@@ -371,12 +452,14 @@ body {
     border-radius: 8px;
 }
 
+
 .admin-form form {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
     margin-top: 1rem;
 }
+
 
 .admin-form input {
     flex: 1;
@@ -386,9 +469,11 @@ body {
     border-radius: 4px;
 }
 
+
 .users-list {
     margin-top: 1.5rem;
 }
+
 
 .user-item {
     display: flex;
@@ -401,15 +486,18 @@ body {
     background-color: #f8f9fa;
 }
 
+
 .user-item span {
     font-weight: 600;
     min-width: 150px;
 }
 
+
 .user-actions {
     display: flex;
     gap: 0.5rem;
 }
+
 
 /* RANKING TABLE */
 .ranking-table {
@@ -418,10 +506,12 @@ body {
     margin-top: 1rem;
 }
 
+
 .ranking-table thead {
     background-color: var(--primary-color);
     color: white;
 }
+
 
 .ranking-table th,
 .ranking-table td {
@@ -430,13 +520,16 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
+
 .ranking-table tbody tr:hover {
     background-color: #f8f9fa;
 }
 
+
 .ranking-table tbody tr:nth-child(even) {
     background-color: #f8f9fa;
 }
+
 
 /* IMPORT/EXPORT */
 .import-export {
@@ -446,15 +539,18 @@ body {
     margin-top: 1.5rem;
 }
 
+
 .import-export div {
     padding: 1.5rem;
     background-color: #f8f9fa;
     border-radius: 8px;
 }
 
+
 .import-export h4 {
     margin-bottom: 1rem;
 }
+
 
 .import-export form {
     display: flex;
@@ -462,11 +558,13 @@ body {
     gap: 0.5rem;
 }
 
+
 .import-export input[type="file"] {
     padding: 0.5rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
 }
+
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
@@ -511,4 +609,3 @@ body {
         padding: 1.5rem;
     }
 }
-

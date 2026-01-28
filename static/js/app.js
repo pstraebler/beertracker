@@ -9,6 +9,7 @@ let totalChart = null;
 let savingInProgress = false;
 let nightModeEnabled = false;
 let lastClickTime = 0;
+let weeklyChart = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
@@ -458,6 +459,7 @@ function updateCharts(data) {
     }
     updateMonthlyChart(data.monthly_stats);
     updateTotalChart(data.records);
+    updateWeeklyChart(data.weekly_stats); 
 }
 
 function updateMonthlyChart(monthlyStats) {
@@ -583,6 +585,69 @@ function updateTotalChart(records) {
             scales: {
                 y: {
                     beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function updateWeeklyChart(weeklyStats) {
+    const ctx = document.getElementById('weeklyChart');
+    if (!ctx) {
+        console.warn('Element weeklyChart non trouvé');
+        return;
+    }
+    
+    const labels = weeklyStats.map(w => w.label);
+    const litersData = weeklyStats.map(w => w.total_liters);
+    
+    if (weeklyChart) {
+        weeklyChart.destroy();
+    }
+    
+    weeklyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Litres consommés',
+                data: litersData,
+                backgroundColor: '#3498db',
+                borderColor: '#2980b9',
+                borderWidth: 2,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: '4 dernières semaines (en litres)',
+                    font: {
+                        size: 16
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y + ' L';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' L';
+                        }
+                    }
                 }
             }
         }

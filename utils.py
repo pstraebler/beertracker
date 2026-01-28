@@ -289,3 +289,51 @@ def check_weekly_drinking_days(user_id, current_date):
         drinking_days.append(current_date_str)
     
     return len(drinking_days) >= 3, drinking_days
+
+def calculate_weekly_stats(user_id):
+    """Calculer les stats des 4 dernières semaines en litres (incluant la semaine en cours)"""
+    from datetime import datetime, timedelta
+    from models import Database
+    
+    today = datetime.now().date()
+    
+    # Trouver le lundi de la semaine courante
+    days_since_monday = today.weekday()
+    current_week_start = today - timedelta(days=days_since_monday)
+    
+    # Calculer les 4 semaines (incluant la courante)
+    weeks = []
+    for i in range(3, -1, -1):  # 3, 2, 1, 0
+        week_start = current_week_start - timedelta(weeks=i)
+        week_end = week_start + timedelta(days=6)
+        weeks.append({
+            'start': week_start,
+            'end': week_end,
+            'label': f"Semaine du {week_start.strftime('%d/%m')}"
+        })
+    
+    # Récupérer les données pour chaque semaine
+    weekly_data = []
+    for week in weeks:
+        records = Database.get_consumption(
+            user_id, 
+            week['start'].isoformat(), 
+            week['end'].isoformat()
+        )
+        
+        total_liters = 0
+        
+        for record in records:
+            pints = record['pints'] or 0
+            half_pints = record['half_pints'] or 0
+            liters_33 = record['liters_33'] or 0
+            
+            # Convertir en litres : pinte=0.5L, demi=0.25L, 33cl=0.33L
+            total_liters += (pints * 0.5) + (half_pints * 0.25) + (liters_33 * 0.33)
+        
+        weekly_data.append({
+            'label': week['label'],
+            'total_liters': round(total_liters, 2)
+        })
+    
+    return weekly_data

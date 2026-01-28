@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, session, redirect, url_for, j
 from datetime import datetime, timedelta
 from models import Database
 from auth import hash_password, verify_password, login_required, admin_required
-from utils import calculate_stats, export_csv, import_csv, get_top_drinkers
+from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, calculate_weekly_stats
 from config import Config
 import io
 from auth import bcrypt
@@ -92,6 +92,7 @@ def api_consumption():
     end_date = request.args.get('end_date')
     
     stats = calculate_stats(user_id, start_date, end_date)
+    weekly_stats = calculate_weekly_stats(user_id)  # AJOUTER CETTE LIGNE
     
     return jsonify({
         'total_pints': stats['total_pints'],
@@ -100,7 +101,8 @@ def api_consumption():
         'total_liters': stats['total_liters'],
         'warnings': stats['warnings'], 
         'monthly_stats': stats['monthly_stats'],
-        'records': [dict(record) for record in stats['all_records']]
+        'records': [dict(record) for record in stats['all_records']],
+        'weekly_stats': weekly_stats  # AJOUTER CETTE LIGNE
     })
 
 @app.route('/api/export', methods=['GET'])
