@@ -26,34 +26,39 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
-        # Vérifier si c'est l'admin
-        if username == Config.ADMIN_USERNAME and password == Config.get_admin_password():
-            session['user_id'] = 0
-            session['username'] = 'admin'
-            session['is_admin'] = True
-            session.permanent = True
-            return redirect(url_for('admin'))
+        # Vérifier si c'est une tentative de connexion admin
+        if username == Config.ADMIN_USERNAME:
+            if password == Config.ADMIN_PASSWORD:
+                session['user_id'] = 0
+                session['username'] = 'admin'
+                session['is_admin'] = True
+                session.permanent = True
+                return redirect(url_for('admin'))
+            else:
+                # Mot de passe admin incorrect
+                return render_template('login.html', error='Mot de passe incorrect')
         
-        # Vérifier l'utilisateur normal
-        if not Database.user_exists(username):
+        # Vérifier si l'utilisateur classique existe
+        if Database.user_exists(username):
+            user_id = Database.get_user_id(username)
+            conn = Database.get_connection()
+            cursor = conn.cursor()
+            cursor.execute('SELECT password FROM users WHERE username = ?', (username,))
+            user = cursor.fetchone()
+            conn.close()
+            
+            if user and verify_password(password, user['password']):
+                session['user_id'] = user_id
+                session['username'] = username
+                session['is_admin'] = False
+                session.permanent = True
+                return redirect(url_for('index'))
+            else:
+                # Mot de passe utilisateur incorrect
+                return render_template('login.html', error='Mot de passe incorrect')
+        else:
+            # Utilisateur n'existe pas
             return render_template('login.html', error='Utilisateur non trouvé')
-        
-        user_id = Database.get_user_id(username)
-        conn = Database.get_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT password FROM users WHERE id = ?', (user_id,))
-        stored_hash = cursor.fetchone()[0]
-        conn.close()
-        
-        if not verify_password(password, stored_hash):
-            return render_template('login.html', error='Mot de passe incorrect')
-        
-        session['user_id'] = user_id
-        session['username'] = username
-        session['is_admin'] = False
-        session.permanent = True
-        
-        return redirect(url_for('dashboard'))
     
     return render_template('login.html')
 

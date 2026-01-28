@@ -41,3 +41,6 @@ class Config:
         # Dernière option: valeur par défaut (dev uniquement)
         print("⚠️  ATTENTION: Utilisation du mot de passe par défaut!")
         return 'admin123'
+    
+     # Charger le mot de passe au démarrage et le stocker comme attribut de classe
+    ADMIN_PASSWORD = get_admin_password.__func__()
