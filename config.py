@@ -4,7 +4,7 @@ from pathlib import Path
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = True
     PERMANENT_SESSION_LIFETIME = 86400 * 3
     
     ADMIN_USERNAME = 'admin'
