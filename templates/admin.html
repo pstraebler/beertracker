@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - BeerTracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
     <div class="navbar">
@@ -52,6 +53,7 @@
                 <div class="admin-form">
                     <h4>Créer un nouvel utilisateur</h4>
                     <form method="POST" action="/admin/user/create">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="text" name="username" placeholder="Pseudo" required>
                         <input type="password" name="password" placeholder="Mot de passe" required>
                         <button type="submit" class="btn-primary">Créer</button>
@@ -65,6 +67,7 @@
                             <span>{{ user.username }}</span>
                             <div class="user-actions">
                                 <form method="POST" action="/admin/user/{{ user.id }}/password" class="inline-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="password" name="password" placeholder="Nouveau mot de passe" required>
                                     <button type="submit" class="btn-secondary btn-sm">Changer MDP</button>
                                 </form>
@@ -72,6 +75,7 @@
                                         🌙 Mode Soirée
                                 </button>
                                 <form method="POST" action="/admin/user/{{ user.id }}/delete" class="inline-form" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn-danger btn-sm">Supprimer</button>
                                 </form>
                             </div>
@@ -122,6 +126,7 @@
                     <div>
                         <h4>Importer des données</h4>
                         <form method="POST" action="/admin/import" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="file" name="file" accept=".csv" required>
                             <button type="submit" class="btn-secondary">Importer</button>
                         </form>

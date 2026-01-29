@@ -1,3 +1,5 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
 let currentBeer = {
     pints: 0,
     half_pints: 0,
@@ -103,6 +105,7 @@ function activateNightMode() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({ enabled: true })
     })
@@ -275,6 +278,7 @@ function saveBeerAutomatic(type, value) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify(payload)
     })

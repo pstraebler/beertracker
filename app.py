@@ -6,10 +6,12 @@ from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, cal
 from config import Config
 import io
 from auth import bcrypt
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
 app.config.from_object(Config)
 bcrypt.init_app(app)
+csrf = CSRFProtect(app)
 
 # Initialiser la base de données au démarrage
 Database.init_db()
