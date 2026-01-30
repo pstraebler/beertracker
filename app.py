@@ -1,11 +1,9 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file, flash
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify
 from datetime import datetime, timedelta
 from models import Database
-from auth import hash_password, verify_password, login_required, admin_required
+from auth import hash_password, verify_password, login_required, admin_required, bcrypt
 from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, calculate_weekly_stats
 from config import Config
-import io
-from auth import bcrypt, hash_password
 from flask_wtf.csrf import CSRFProtect
 import os
 import uuid

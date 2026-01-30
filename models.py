@@ -46,26 +46,6 @@ class Database:
         conn.close()
 
     @staticmethod
-    def ensure_admin_exists(admin_username, admin_password_hash):
-        conn = Database.get_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "SELECT id FROM users WHERE username = ?",
-            (admin_username,)
-        )
-        exists = cursor.fetchone()
-
-        if not exists:
-            cursor.execute(
-                "INSERT INTO users (id, username, password, is_admin) VALUES (?, ?, ?, 1)",
-                (str(uuid.uuid4()), admin_username, admin_password_hash)
-            )
-            conn.commit()
-
-        conn.close()
-    
-    @staticmethod
     def get_connection():
         """Obtenir une connexion à la base de données"""
         conn = sqlite3.connect(DB_PATH)
