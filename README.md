@@ -55,7 +55,7 @@ docker-compose up -d --build
 
 ### Via Python
 
-*Paquets nécessaires : python3, python3-pip, python3-venv
+*Paquets nécessaires : python3, python3-pip, python3-venv*
 
 ```bash
 python3 -m venv ./beertracker-venv
