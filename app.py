@@ -294,4 +294,4 @@ def get_night_mode_status(user_id):
     return jsonify({'night_mode_enabled': is_enabled})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=False)
+    app.run(host='0.0.0.0', port=(Config.APP_PORT), debug=False)
