@@ -8,7 +8,7 @@ class Config:
         raise RuntimeError("SECRET_KEY must be set")
 
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = os.environ.get("FLASK_ENV") == "production"
+    SESSION_COOKIE_SECURE = os.environ.get("USE_HTTPS") == "1"
     PERMANENT_SESSION_LIFETIME = 86400 * 3
 
     ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
