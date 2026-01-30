@@ -33,7 +33,7 @@ Application web de suivi de consommation de bière avec gestion multi-utilisateu
 ## Déploiement 
 
 ```bash
-git clone https://github.com/pstraebler/beertracker
+git clone https://github.com/pstraebler/beertracker.git
 cd beertracker
 cp .env.example .env
 ```
