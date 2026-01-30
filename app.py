@@ -36,13 +36,13 @@ cursor.execute(
 admin = cursor.fetchone()
 
 if admin:
-    # 🔁 Mise à jour systématique
+    # Mise à jour systématique
     cursor.execute(
         "UPDATE users SET password = ? WHERE username = ? AND is_admin = 1",
         (admin_password_hash, admin_username)
     )
 else:
-    # 🆕 Création
+    # Création
     cursor.execute(
         "INSERT INTO users (id, username, password, is_admin) VALUES (?, ?, ?, 1)",
         (str(uuid.uuid4()), admin_username, admin_password_hash)
