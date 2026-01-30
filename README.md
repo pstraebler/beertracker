@@ -28,7 +28,9 @@ Application web de suivi de consommation de bière avec gestion multi-utilisateu
 
 ## Prérequis
 
-- Docker + Docker Compose
+- Docker / Docker Compose (recommandé)
+OU
+- Python (3.11 +)
 
 ## Déploiement 
 
@@ -45,15 +47,26 @@ cp .env.example .env
 - `ADMIN_PASSWORD` : Mot de passe de l'administrateur
 - `USE_HTTPS` : À ne pas activer sur des environnements locaux (défaut : `0`)
 
-### Lancer l'application
+### Via Docker (recommandé)
 
 ```bash
 docker-compose up -d --build
 ```
 
-L'application sera accessible sur **http://localhost:8080**
+### Via Python
+
+*Paquets nécessaires : python3, python3-pip, python3-venv
+
+```bash
+python3 -m venv ./beertracker-venv
+source ./beertracker-venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
 
 ### Premier démarrage
+
+L'application est accessible sur **http://localhost:8080**
 
 1. Connectez-vous avec les identifiants admin configurés
 2. Créez les utilisateurs depuis le panel d'administration
