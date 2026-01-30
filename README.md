@@ -6,7 +6,7 @@ Application web de suivi de consommation de bière avec gestion multi-utilisateu
 
 ### Pour les utilisateurs
 - **Suivi de consommation** : Enregistrement de pintes (50cl), demis (25cl) et 33cl avec horodatage
-- **Mode soirée** : Mode spécial qui s'active jusqu'à 7h le lendemain pour éviter les retraits inopinés ###### 
+- **Mode soirée** : Mode spécial qui reste actif jusqu’à 7h le lendemain pour éviter de retirer ses bières du compteur sous l’effet de l’ivresse.
 - **Statistiques personnelles** : 
   - Visualisation du total en litres
   - Estimation du coût (~6€ pour 50cL de bière)
