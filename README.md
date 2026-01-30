@@ -43,6 +43,8 @@ cp .env.example .env
 **⚠️ Important** : Modifiez les valeurs suivantes dans `.env` :
 
 - `SECRET_KEY` : Clé secrète pour les sessions Flask (générez une chaîne aléatoire longue)
+- `APP_PORT` : Port sur lequel l'application va écouter
+- `HOST_PORT` : Port sur lequel l'application sera exposée (uniquement pour Docker)
 - `ADMIN_USERNAME` : Facultatif. Nom d'utilisateur de l'administrateur (par défaut : `admin`)
 - `ADMIN_PASSWORD` : Mot de passe de l'administrateur
 - `USE_HTTPS` : À ne pas activer sur des environnements locaux (défaut : `0`)

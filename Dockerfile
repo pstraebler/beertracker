@@ -9,7 +9,5 @@ COPY . .
 
 RUN mkdir -p data
 
-EXPOSE 8080
-
 CMD ["python", "app.py"]
 
