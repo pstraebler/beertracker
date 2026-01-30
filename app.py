@@ -5,8 +5,9 @@ from auth import hash_password, verify_password, login_required, admin_required
 from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, calculate_weekly_stats
 from config import Config
 import io
-from auth import bcrypt
+from auth import bcrypt, hash_password
 from flask_wtf.csrf import CSRFProtect
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -15,6 +16,17 @@ csrf = CSRFProtect(app)
 
 # Initialiser la base de données au démarrage
 Database.init_db()
+
+admin_password = os.environ.get("ADMIN_PASSWORD")
+if not admin_password:
+    raise RuntimeError("ADMIN_PASSWORD must be set")
+
+admin_password_hash = hash_password(admin_password)
+
+Database.ensure_admin_exists(
+    Config.ADMIN_USERNAME,
+    admin_password_hash
+)
 
 @app.route('/')
 def index():
@@ -28,33 +40,26 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
-        # Vérifier si c'est une tentative de connexion admin
-        if username == Config.ADMIN_USERNAME:
-            if password == Config.ADMIN_PASSWORD:
-                session['user_id'] = 0
-                session['username'] = 'admin'
-                session['is_admin'] = True
-                session.permanent = True
-                return redirect(url_for('admin'))
-            else:
-                # Mot de passe admin incorrect
-                return render_template('login.html', error='Mot de passe incorrect')
-        
         # Vérifier si l'utilisateur classique existe
         if Database.user_exists(username):
             user_id = Database.get_user_id(username)
             conn = Database.get_connection()
             cursor = conn.cursor()
-            cursor.execute('SELECT password FROM users WHERE username = ?', (username,))
+            cursor.execute(
+                'SELECT id, password, is_admin FROM users WHERE username = ?',
+                (username,)
+            )
             user = cursor.fetchone()
             conn.close()
             
             if user and verify_password(password, user['password']):
-                session['user_id'] = user_id
+                session.clear()  # rotation de session
+                session['user_id'] = user['id']
                 session['username'] = username
-                session['is_admin'] = False
+                session['is_admin'] = bool(user['is_admin'])
                 session.permanent = True
                 return redirect(url_for('index'))
+
             else:
                 # Mot de passe utilisateur incorrect
                 return render_template('login.html', error='Mot de passe incorrect')
@@ -147,7 +152,7 @@ def admin_create_user():
     
     return redirect(url_for('admin'))
 
-@app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
+@app.route('/admin/user/<user_id>/delete', methods=['POST'])
 @admin_required
 def admin_delete_user(user_id):
     Database.delete_user(user_id)
@@ -243,7 +248,7 @@ def night_mode():
         })
 
 # Endpoint admin pour gérer le mode soirée d'autres utilisateurs
-@app.route('/admin/night-mode/<int:user_id>', methods=['POST'])
+@app.route('/admin/night-mode/<user_id>', methods=['POST'])
 @admin_required
 def toggle_night_mode(user_id):
     """Admin: Basculer le mode soirée (vrai toggle)"""
@@ -260,7 +265,7 @@ def toggle_night_mode(user_id):
     return jsonify({'success': True, 'message': f'Mode soirée {action}'})
 
 
-@app.route('/api/night-mode-status/<int:user_id>', methods=['GET'])
+@app.route('/api/night-mode-status/<user_id>', methods=['GET'])
 @admin_required
 def get_night_mode_status(user_id):
     """Admin: Récupère l'état du mode soirée pour un utilisateur"""

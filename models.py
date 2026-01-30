@@ -20,9 +20,11 @@ class Database:
                 id TEXT PRIMARY KEY,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
+                is_admin INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 night_mode_until TIMESTAMP DEFAULT NULL
             )
+
         ''')
         
         # Table consommation avec user_id en TEXT pour UUID
@@ -41,6 +43,26 @@ class Database:
         ''')
         
         conn.commit()
+        conn.close()
+
+    @staticmethod
+    def ensure_admin_exists(admin_username, admin_password_hash):
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT id FROM users WHERE username = ?",
+            (admin_username,)
+        )
+        exists = cursor.fetchone()
+
+        if not exists:
+            cursor.execute(
+                "INSERT INTO users (id, username, password, is_admin) VALUES (?, ?, ?, 1)",
+                (str(uuid.uuid4()), admin_username, admin_password_hash)
+            )
+            conn.commit()
+
         conn.close()
     
     @staticmethod
@@ -105,7 +127,7 @@ class Database:
         """Obtenir tous les utilisateurs"""
         conn = Database.get_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT id, username, created_at FROM users ORDER BY username')
+        cursor.execute('SELECT id, username, created_at FROM users WHERE is_admin = 0 ORDER BY username')
         users = cursor.fetchall()
         conn.close()
         return users

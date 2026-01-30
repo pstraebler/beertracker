@@ -1,4 +1,5 @@
 import os
+from auth import hash_password
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -10,8 +11,4 @@ class Config:
     SESSION_COOKIE_SECURE = os.environ.get("FLASK_ENV") == "production"
     PERMANENT_SESSION_LIFETIME = 86400 * 3
 
-    ADMIN_USERNAME = 'admin'
-
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
-    if not ADMIN_PASSWORD:
-        raise RuntimeError("ADMIN_PASSWORD must be set")
+    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
