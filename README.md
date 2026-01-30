@@ -38,15 +38,13 @@ cd beertracker
 cp .env.example .env
 ```
 
-### 5. Configurer les variables d'environnement
-
 **⚠️ Important** : Modifiez les valeurs suivantes dans `.env` :
 
 - `SECRET_KEY` : Clé secrète pour les sessions Flask (générez une chaîne aléatoire longue)
 - `ADMIN_USERNAME` : Facultatif. Nom d'utilisateur de l'administrateur (par défaut : `admin`)
 - `ADMIN_PASSWORD` : Mot de passe de l'administrateur
 
-### 6. Lancer l'application
+### Lancer l'application
 
 ```bash
 docker-compose up -d --build
@@ -54,13 +52,13 @@ docker-compose up -d --build
 
 L'application sera accessible sur **http://localhost:8080**
 
-### 7. Premier démarrage
+### Premier démarrage
 
 1. Connectez-vous avec les identifiants admin configurés
 2. Créez les utilisateurs depuis le panel d'administration
 3. Les utilisateurs peuvent se connecter avec leurs identifiants
 
-## Sauvegarde des données
+## Stockage des données
 
 La base de données SQLite est stockée dans le volume Docker `beertracker_data` 
 Le fichier est situé dans `./data/db.sqlite3`. 
