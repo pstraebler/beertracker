@@ -8,6 +8,7 @@ import io
 from auth import bcrypt, hash_password
 from flask_wtf.csrf import CSRFProtect
 import os
+import uuid
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -17,16 +18,38 @@ csrf = CSRFProtect(app)
 # Initialiser la base de données au démarrage
 Database.init_db()
 
+admin_username = os.environ.get("ADMIN_USERNAME", "admin")
 admin_password = os.environ.get("ADMIN_PASSWORD")
+
 if not admin_password:
     raise RuntimeError("ADMIN_PASSWORD must be set")
 
 admin_password_hash = hash_password(admin_password)
 
-Database.ensure_admin_exists(
-    Config.ADMIN_USERNAME,
-    admin_password_hash
+conn = Database.get_connection()
+cursor = conn.cursor()
+
+cursor.execute(
+    "SELECT id FROM users WHERE username = ? AND is_admin = 1",
+    (admin_username,)
 )
+admin = cursor.fetchone()
+
+if admin:
+    # 🔁 Mise à jour systématique
+    cursor.execute(
+        "UPDATE users SET password = ? WHERE username = ? AND is_admin = 1",
+        (admin_password_hash, admin_username)
+    )
+else:
+    # 🆕 Création
+    cursor.execute(
+        "INSERT INTO users (id, username, password, is_admin) VALUES (?, ?, ?, 1)",
+        (str(uuid.uuid4()), admin_username, admin_password_hash)
+    )
+
+conn.commit()
+conn.close()
 
 @app.route('/')
 def index():
