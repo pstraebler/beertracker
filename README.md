@@ -43,6 +43,7 @@ cp .env.example .env
 - `SECRET_KEY` : Clé secrète pour les sessions Flask (générez une chaîne aléatoire longue)
 - `ADMIN_USERNAME` : Facultatif. Nom d'utilisateur de l'administrateur (par défaut : `admin`)
 - `ADMIN_PASSWORD` : Mot de passe de l'administrateur
+- `USE_HTTPS` : À ne pas activer sur des environnements locaux (défaut : `0`)
 
 ### Lancer l'application
 
