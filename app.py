@@ -7,11 +7,20 @@ from config import Config
 from flask_wtf.csrf import CSRFProtect
 import os
 import uuid
+import logging
 
 app = Flask(__name__)
 app.config.from_object(Config)
 bcrypt.init_app(app)
 csrf = CSRFProtect(app)
+
+# Configuration du logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%d/%b/%Y %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
 # Initialiser la base de données au démarrage
 Database.init_db()
@@ -60,6 +69,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
+        client_ip = request.remote_addr
         
         # Vérifier si l'utilisateur classique existe
         if Database.user_exists(username):
@@ -74,6 +84,7 @@ def login():
             conn.close()
             
             if user and verify_password(password, user['password']):
+                app.logger.info(f'{client_ip} Authentification successful for user {username}')
                 session.clear()  # rotation de session
                 session['user_id'] = user['id']
                 session['username'] = username
@@ -83,9 +94,11 @@ def login():
 
             else:
                 # Mot de passe utilisateur incorrect
+                app.logger.warning(f'{client_ip} Authentification failed for user {username} (incorrect password)')
                 return render_template('login.html', error='Mot de passe incorrect')
         else:
             # Utilisateur n'existe pas
+            app.logger.warning(f'{client_ip} Authentification failed for user {username} (unknown user)')
             return render_template('login.html', error='Utilisateur non trouvé')
     
     return render_template('login.html')
