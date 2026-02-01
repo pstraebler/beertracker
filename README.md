@@ -2,7 +2,7 @@
 
 Application web de suivi de consommation de bière avec gestion multi-utilisateurs et tableau de bord statistique.
 
-<img width="2560" height="1664" alt="Gemini_Generated_Image_ag90s5ag90s5ag90" src="https://github.com/user-attachments/assets/d1db4ab5-13ca-4dc7-8b72-13dc9948502c" />
+<img width="2560" height="1664" alt="beertracker" src="https://github.com/user-attachments/assets/fbefe3bd-58ac-49df-90dc-58cdf3db4856" />
 
 ## Fonctionnalités
 
