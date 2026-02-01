@@ -284,11 +284,6 @@ def check_weekly_drinking_days(user_id, current_date):
     drinking_days = [row[0] for row in cursor.fetchall()]
     conn.close()
     
-    # Si le jour courant n'est pas encore dans la liste, l'ajouter
-    current_date_str = current_date_obj.isoformat()
-    if current_date_str not in drinking_days:
-        drinking_days.append(current_date_str)
-    
     return len(drinking_days) >= 3, drinking_days
 
 def calculate_weekly_stats(user_id):
