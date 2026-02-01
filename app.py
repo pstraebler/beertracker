@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file
 from datetime import datetime, timedelta
 from models import Database
 from auth import hash_password, verify_password, login_required, admin_required, bcrypt
@@ -8,6 +8,7 @@ from flask_wtf.csrf import CSRFProtect
 import os
 import uuid
 import logging
+import io
 
 app = Flask(__name__)
 app.config.from_object(Config)
