@@ -246,12 +246,18 @@ def get_top_drinkers():
         SELECT users.username, 
             SUM(consumption.pints) as total_pints,
             SUM(consumption.half_pints) as total_half_pints,
-            SUM(consumption.liters_33) as total_33cl
+            SUM(consumption.liters_33) as total_33cl,
+            ROUND(
+                (SUM(consumption.pints) * 0.5) + 
+                (SUM(consumption.half_pints) * 0.25) + 
+                (SUM(consumption.liters_33) * 0.33), 
+                2
+            ) as total_liters
         FROM users
         LEFT JOIN consumption ON users.id = consumption.user_id
         WHERE users.is_admin = 0
         GROUP BY users.id, users.username
-        ORDER BY total_pints DESC, total_half_pints DESC, total_33cl DESC
+        ORDER BY total_liters DESC
     ''')
     
     drinkers = cursor.fetchall()

@@ -131,6 +131,7 @@
                             <th>Pintes</th>
                             <th>Demis</th>
                             <th>33cl</th>
+                            <th>Total (en L)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -141,6 +142,7 @@
                                 <td>{{ drinker.total_pints or 0 }}</td>
                                 <td>{{ drinker.total_half_pints or 0 }}</td>
                                 <td>{{ drinker.total_33cl or 0 }}</td>
+                                <td><strong>{{ drinker.total_liters or 0 }} L</strong></td>
                             </tr>
                         {% endfor %}
                     </tbody>
