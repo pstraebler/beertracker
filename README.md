@@ -2,6 +2,8 @@
 
 Application web de suivi de consommation de bière avec gestion multi-utilisateurs et tableau de bord statistique.
 
+<img width="2560" height="1664" alt="Gemini_Generated_Image_ag90s5ag90s5ag90" src="https://github.com/user-attachments/assets/d1db4ab5-13ca-4dc7-8b72-13dc9948502c" />
+
 ## Fonctionnalités
 
 ### Pour les utilisateurs
