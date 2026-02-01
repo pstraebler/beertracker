@@ -307,5 +307,59 @@ def get_night_mode_status(user_id):
     is_enabled = Database.get_night_mode_status(user_id)
     return jsonify({'night_mode_enabled': is_enabled})
 
+@app.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """Permet à un utilisateur de changer son mot de passe"""
+    
+    # Bloquer l'accès pour l'administrateur
+    if session.get('is_admin'):
+        return redirect(url_for('admin'))
+    
+    if request.method == 'POST':
+        current_password = request.form.get('current_password', '').strip()
+        new_password = request.form.get('new_password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+        
+        # Validation
+        if not current_password or not new_password or not confirm_password:
+            return render_template('password.html', 
+                                 error="Tous les champs sont requis",
+                                 username=session['username'])
+        
+        if new_password != confirm_password:
+            return render_template('password.html', 
+                                 error="Les nouveaux mots de passe ne correspondent pas",
+                                 username=session['username'])
+        
+        if len(new_password) < 6:
+            return render_template('password.html', 
+                                 error="Le mot de passe doit contenir au moins 6 caractères",
+                                 username=session['username'])
+        
+        # Vérifier le mot de passe actuel
+        username = session['username']
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if not user or not verify_password(current_password, user['password']):
+            return render_template('password.html', 
+                                 error="Mot de passe actuel incorrect",
+                                 username=session['username'])
+        
+        # Changer le mot de passe
+        password_hash = hash_password(new_password)
+        Database.update_user_password(username, password_hash)
+        
+        app.logger.info(f"Password changed successfully for user {username}")
+        return render_template('password.html', 
+                             success="Mot de passe modifié avec succès",
+                             username=session['username'])
+    
+    return render_template('password.html', username=session['username'])
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=(Config.APP_PORT), debug=False)
