@@ -75,23 +75,28 @@ class Database:
     @staticmethod
     def create_user(username, password):
         """Créer un nouvel utilisateur avec UUID aléatoire"""
+        # Vérifier d'abord si l'utilisateur existe déjà
+        if Database.user_exists(username):
+            return False, "Un utilisateur avec ce nom existe déjà"
+    
         conn = Database.get_connection()
         cursor = conn.cursor()
+    
         try:
             # Générer un UUID v4 aléatoire
             user_id = str(uuid.uuid4())
-        
+    
             cursor.execute(
                 'INSERT INTO users (id, username, password) VALUES (?, ?, ?)',
                 (user_id, username, password)
             )
             conn.commit()
             conn.close()
-            return True
+            return True, "Utilisateur créé avec succès"
         except sqlite3.IntegrityError:
             conn.close()
-            return False
-    
+            return False, "Erreur lors de la création de l'utilisateur"
+
     @staticmethod
     def update_user_password(username, new_password):
         """Mettre à jour le mot de passe d'un utilisateur"""

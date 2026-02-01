@@ -180,12 +180,29 @@ def admin_create_user():
     password = request.form.get('password', '').strip()
     
     if not username or not password:
-        return redirect(url_for('admin'))
+        users = Database.get_all_users()
+        top_drinkers = get_top_drinkers()
+        return render_template('admin.html', 
+                             users=users, 
+                             top_drinkers=top_drinkers,
+                             error_message="Le nom d'utilisateur et le mot de passe sont requis")
     
     password_hash = hash_password(password)
-    Database.create_user(username, password_hash)
+    success, message = Database.create_user(username, password_hash)
     
-    return redirect(url_for('admin'))
+    users = Database.get_all_users()
+    top_drinkers = get_top_drinkers()
+    
+    if success:
+        return render_template('admin.html', 
+                             users=users, 
+                             top_drinkers=top_drinkers,
+                             success_message=message)
+    else:
+        return render_template('admin.html', 
+                             users=users, 
+                             top_drinkers=top_drinkers,
+                             error_message=message)
 
 @app.route('/admin/user/<user_id>/delete', methods=['POST'])
 @admin_required
@@ -234,19 +251,24 @@ def admin_import():
     if file.filename == '':
         return redirect(url_for('admin'))
     
-    imported_count, errors, created_users = import_csv(file.read(), all_users=True)
+    imported_count, errors, created_users, skipped_users = import_csv(file.read(), all_users=True)
     
     # Créer un message avec les informations d'import
     message = f"Import terminé: {imported_count} entrées importées"
     
     if created_users:
-        message += f"\n\nUtilisateurs créés ({len(created_users)}):\n"
+        message += f"\n\n✅ Utilisateurs créés ({len(created_users)}):\n"
         for user in created_users:
             message += f"- {user['username']}: {user['password']}\n"
         message += "\n⚠️ IMPORTANT: Changez ces mots de passe par défaut !"
     
+    if skipped_users:
+        message += f"\n\n⚠️ Utilisateurs existants ignorés ({len(skipped_users)}):\n"
+        for user in skipped_users:
+            message += f"- {user['username']} (déjà présent en base)\n"
+    
     if errors:
-        message += f"\n\nErreurs ({len(errors)}):\n"
+        message += f"\n\n❌ Erreurs ({len(errors)}):\n"
         for error in errors:
             message += f"- {error}\n"
     
@@ -259,7 +281,8 @@ def admin_import():
                          top_drinkers=top_drinkers,
                          import_message=message,
                          import_success=True if imported_count > 0 else False,
-                         created_users=created_users)
+                         created_users=created_users,
+                         skipped_users=skipped_users)
 
 @app.route('/api/night-mode', methods=['GET', 'POST'])
 @login_required

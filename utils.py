@@ -178,6 +178,7 @@ def import_csv(file_content, user_id=None, all_users=False):
     
     imported_count = 0
     created_users = []
+    skipped_users = []  # AJOUTER cette ligne
     errors = []
     
     for row in reader:
@@ -187,25 +188,32 @@ def import_csv(file_content, user_id=None, all_users=False):
                 if not username:
                     errors.append(f"Erreur ligne {imported_count + 1}: Utilisateur vide")
                     continue
-                
+    
                 user_id_import = Database.get_user_id(username)
-                
-                if not user_id_import:
-                    default_password = f"user_{username}_{datetime.now().strftime('%Y%m%d')}"
-                    password_hash = hash_password(default_password)
-                    
-                    if Database.create_user(username, password_hash):
-                        user_id_import = Database.get_user_id(username)
-                        created_users.append({
-                            'username': username,
-                            'password': default_password
-                        })
-                    else:
-                        errors.append(f"Erreur: Impossible de créer l'utilisateur '{username}'")
-                        continue
+    
+                if user_id_import:
+                    if username not in [u['username'] for u in skipped_users]:
+                        skipped_users.append({'username': username})
+                    continue  #  On passe à la ligne suivante, on ne traite pas les données
+    
+                # L'utilisateur n'existe pas, on le crée
+                default_password = f"user_{username}_{datetime.now().strftime('%Y%m%d')}"
+                password_hash = hash_password(default_password)
+    
+                success, message = Database.create_user(username, password_hash)
+    
+                if success:
+                    user_id_import = Database.get_user_id(username)
+                    created_users.append({
+                    'username': username,
+                    'password': default_password
+                })
+                else:
+                    errors.append(f"Erreur: Impossible de créer l'utilisateur '{username}' - {message}")
+                continue
             else:
                 user_id_import = user_id
-            
+  
             date = row.get('Date', '').strip()
             if not date:
                 errors.append(f"Erreur ligne {imported_count + 1}: Date vide")
@@ -227,7 +235,7 @@ def import_csv(file_content, user_id=None, all_users=False):
         except Exception as e:
             errors.append(f"Erreur ligne {imported_count + 1}: {str(e)}")
     
-    return imported_count, errors, created_users
+    return imported_count, errors, created_users, skipped_users  # MODIFIER le return
 
 def get_top_drinkers():
     """Obtenir le classement des plus gros buveurs"""
