@@ -30,9 +30,7 @@ Application web de suivi de consommation de bière avec gestion multi-utilisateu
 
 ## Prérequis
 
-- Docker / Docker Compose (recommandé)
-OU
-- Python (3.11 +)
+- Docker / Docker Compose (recommandé) ou Python (3.11 +)
 
 ## Déploiement 
 
