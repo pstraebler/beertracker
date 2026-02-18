@@ -173,69 +173,57 @@ def export_csv(user_id=None, all_users=False):
 
 def import_csv(file_content, user_id=None, all_users=False):
     """Importer des données depuis un CSV"""
-    lines = file_content.decode('utf-8').strip().split('\n')
-    reader = csv.DictReader(io.StringIO('\n'.join(lines)))
+    decoded = file_content.decode('utf-8')
+    reader = csv.reader(io.StringIO(decoded))
     
+    header = next(reader, None)
+
     imported_count = 0
-    created_users = []
-    skipped_users = []  # AJOUTER cette ligne
     errors = []
-    
+    created_users = []
+
     for row in reader:
         try:
-            if all_users:
-                username = row.get('Utilisateur', '').strip()
-                if not username:
-                    errors.append(f"Erreur ligne {imported_count + 1}: Utilisateur vide")
-                    continue
-    
-                user_id_import = Database.get_user_id(username)
-    
-                if user_id_import:
-                    if username not in [u['username'] for u in skipped_users]:
-                        skipped_users.append({'username': username})
-                    continue  #  On passe à la ligne suivante, on ne traite pas les données
-    
-                # L'utilisateur n'existe pas, on le crée
-                default_password = f"user_{username}_{datetime.now().strftime('%Y%m%d')}"
-                password_hash = hash_password(default_password)
-    
+            username = row[0].strip()
+            date = row[1].strip()
+            time_value = row[2].strip() if len(row) > 2 else "00:00:00"
+            pints = int(row[3]) if len(row) > 3 else 0
+            half_pints = int(row[4]) if len(row) > 4 else 0
+            liters_33 = int(row[5]) if len(row) > 5 else 0
+
+            # Vérifier si utilisateur existe
+            if not Database.user_exists(username):
+                # Création automatique
+                temp_password = "changeme123"
+                password_hash = hash_password(temp_password)
                 success, message = Database.create_user(username, password_hash)
-    
+
                 if success:
-                    user_id_import = Database.get_user_id(username)
                     created_users.append({
-                    'username': username,
-                    'password': default_password
-                })
+                        "username": username,
+                        "password": temp_password
+                    })
                 else:
-                    errors.append(f"Erreur: Impossible de créer l'utilisateur '{username}' - {message}")
-                continue
-            else:
-                user_id_import = user_id
-  
-            date = row.get('Date', '').strip()
-            if not date:
-                errors.append(f"Erreur ligne {imported_count + 1}: Date vide")
-                continue
-            
-            # Récupérer l'heure depuis le CSV (ou utiliser 00:00:00)
-            time = row.get('Heure', '00:00:00').strip()
-            if not time:
-                time = '00:00:00'
-            
-            pints = int(row.get('Pintes', 0)) if row.get('Pintes', '').strip() else 0
-            half_pints = int(row.get('Demis', 0)) if row.get('Demis', '').strip() else 0
-            liters_33 = int(row.get('33cl', 0)) if row.get('33cl', '').strip() else 0
-            
-            Database.add_consumption(user_id_import, date, pints, half_pints, liters_33, time)
+                    errors.append(f"Erreur création utilisateur {username}")
+                    continue
+
+            user_uuid = Database.get_user_id(username)
+
+            Database.add_consumption(
+                user_uuid,
+                date,
+                pints,
+                half_pints,
+                liters_33,
+                time_value
+            )
+
             imported_count += 1
-        except ValueError as e:
-            errors.append(f"Erreur ligne {imported_count + 1}: Valeur invalide - {str(e)}")
+
         except Exception as e:
-            errors.append(f"Erreur ligne {imported_count + 1}: {str(e)}")
-    
-    return imported_count, errors, created_users, skipped_users  # MODIFIER le return
+            errors.append(f"Ligne invalide {row}: {str(e)}")
+
+    return imported_count, errors, created_users
 
 def get_top_drinkers():
     """Obtenir le classement des plus gros buveurs"""

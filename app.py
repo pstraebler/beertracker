@@ -251,7 +251,7 @@ def admin_import():
     if file.filename == '':
         return redirect(url_for('admin'))
     
-    imported_count, errors, created_users, skipped_users = import_csv(file.read(), all_users=True)
+    imported_count, errors, created_users = import_csv(file.read(), all_users=True)
     
     # Créer un message avec les informations d'import
     message = f"Import terminé: {imported_count} entrées importées"
@@ -261,11 +261,6 @@ def admin_import():
         for user in created_users:
             message += f"- {user['username']}: {user['password']}\n"
         message += "\n⚠️ IMPORTANT: Changez ces mots de passe par défaut !"
-    
-    if skipped_users:
-        message += f"\n\n⚠️ Utilisateurs existants ignorés ({len(skipped_users)}):\n"
-        for user in skipped_users:
-            message += f"- {user['username']} (déjà présent en base)\n"
     
     if errors:
         message += f"\n\n❌ Erreurs ({len(errors)}):\n"
@@ -281,8 +276,7 @@ def admin_import():
                          top_drinkers=top_drinkers,
                          import_message=message,
                          import_success=True if imported_count > 0 else False,
-                         created_users=created_users,
-                         skipped_users=skipped_users)
+                         created_users=created_users)
 
 @app.route('/api/night-mode', methods=['GET', 'POST'])
 @login_required
