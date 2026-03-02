@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file
 from datetime import datetime, timedelta
 from models import Database
-from auth import hash_password, verify_password, login_required, admin_required, bcrypt
+from auth import hash_password, verify_password, login_required, admin_required, verify_user_exists, bcrypt
 from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, calculate_weekly_stats
 from config import Config
 from flask_wtf.csrf import CSRFProtect
@@ -67,6 +67,14 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Si déjà connecté alors redirection vers dashboard
+    if 'user_id' in session:
+        if verify_user_exists(session['user_id']):
+            if session.get('is_admin'):
+                return redirect(url_for('admin'))
+            return redirect(url_for('dashboard'))
+        else:
+            session.clear()
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
