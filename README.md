@@ -55,6 +55,12 @@ cp .env.example .env
 docker-compose up -d --build
 ```
 
+Il est également possible d'utiliser l'image Beertracker depuis le *Docker Hub* :
+
+```bash
+docker run --rm --env-file=.env -p 8080:8080 pierrestraebler/beertracker:latest
+```
+
 ### Via Python
 
 *Paquets nécessaires : python3, python3-pip, python3-venv*
