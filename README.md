@@ -17,6 +17,7 @@ Application web de suivi de consommation de bière avec gestion multi-utilisateu
 - **Alertes intelligentes** :
   - Avertissement si plus de 1,5L consommés sur une fenêtre glissante de 3 heures
   - Alerte à partir de 3 jours de consommation dans la même semaine
+- **Consommation des autres utilisateurs** : Le top 3 des utilisateurs ayant consommé le plus de bières pour l'année en cours est affiché, avec le détail des consommations
 - **Export de données** : Téléchargement de l'historique personnel en CSV
 
 ### Pour les administrateurs
@@ -24,7 +25,7 @@ Application web de suivi de consommation de bière avec gestion multi-utilisateu
   - Création, modification et suppression de comptes
   - Changement de mot de passe
   - Activation/désactivation du mode soirée pour chaque utilisateur
-- **Classement** : Tableau des plus gros buveurs (pintes, demis, 33cl)
+- **Classement** : Tableau contenant tous les utilisateurs, avec leurs consommations (pintes, demis, 33cl) pour l'année en cours
 - **Import/Export global** : Gestion des données de tous les utilisateurs en CSV
 - **Création automatique d'utilisateurs** : Lors de l'import CSV, les utilisateurs manquants sont créés avec un mot de passe temporaire
 
