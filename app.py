@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file, flash
 from datetime import datetime, timedelta, date
 from models import Database
 from auth import hash_password, verify_password, login_required, admin_required, verify_user_exists, bcrypt
@@ -198,31 +198,16 @@ def admin():
 def admin_create_user():
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
-    
+
     if not username or not password:
-        users = Database.get_all_users()
-        top_drinkers = get_top_drinkers()
-        return render_template('admin.html', 
-                             users=users, 
-                             top_drinkers=top_drinkers,
-                             error_message="Le nom d'utilisateur et le mot de passe sont requis")
-    
+        flash("Le nom d'utilisateur et le mot de passe sont requis", "error")
+        return redirect(url_for('admin'))  
+
     password_hash = hash_password(password)
     success, message = Database.create_user(username, password_hash)
-    
-    users = Database.get_all_users()
-    top_drinkers = get_top_drinkers()
-    
-    if success:
-        return render_template('admin.html', 
-                             users=users, 
-                             top_drinkers=top_drinkers,
-                             success_message=message)
-    else:
-        return render_template('admin.html', 
-                             users=users, 
-                             top_drinkers=top_drinkers,
-                             error_message=message)
+
+    flash(message, "success" if success else "error")
+    return redirect(url_for('admin'))  
 
 @app.route('/admin/user/<user_id>/delete', methods=['POST'])
 @admin_required
@@ -264,39 +249,30 @@ def admin_export():
 @admin_required
 def admin_import():
     if 'file' not in request.files:
+        flash("Aucun fichier envoyé.", "error")
         return redirect(url_for('admin'))
-    
+
     file = request.files['file']
-    
-    if file.filename == '':
+    if not file.filename:
+        flash("Aucun fichier sélectionné.", "error")
         return redirect(url_for('admin'))
-    
+
     imported_count, errors, created_users = import_csv(file.read(), all_users=True)
-    
-    # Créer un message avec les informations d'import
+
+    # Construit le message (reprend ta logique actuelle)
     message = f"Import terminé: {imported_count} entrées importées"
-    
     if created_users:
-        message += f"\n\n✅ Utilisateurs créés ({len(created_users)}):\n"
-        for user in created_users:
-            message += f"- {user['username']}: {user['password']}\n"
-        message += "\n⚠️ IMPORTANT: Changez ces mots de passe par défaut !"
-    
+        message += f"\nUtilisateurs créés: {len(created_users)}"
+        for u in created_users:
+            message += f"\n- {u['username']} / {u['password']}"
+        message += "\nIMPORTANT: Changez ces mots de passe par défaut !"
     if errors:
-        message += f"\n\n❌ Erreurs ({len(errors)}):\n"
-        for error in errors:
-            message += f"- {error}\n"
-    
-    # Pour afficher le message, utiliser les templates avec variables
-    users = Database.get_all_users()
-    top_drinkers = get_top_drinkers(date.today().year)
-    
-    return render_template('admin.html', 
-                         users=users, 
-                         top_drinkers=top_drinkers,
-                         import_message=message,
-                         import_success=True if imported_count > 0 else False,
-                         created_users=created_users)
+        message += f"\nErreurs: {len(errors)}"
+        for e in errors:
+            message += f"\n- {e}"
+
+    flash(message, "success" if imported_count > 0 and not errors else "warning")
+    return redirect(url_for('admin'))
 
 @app.route('/api/night-mode', methods=['GET', 'POST'])
 @login_required

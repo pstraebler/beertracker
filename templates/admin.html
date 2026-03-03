@@ -16,6 +16,24 @@
         </div>
     </div>
     
+    {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      {% if category == 'success' %}
+        <div class="card" style="background-color:#d4edda; border-left:4px solid #27ae60;">
+          <h3 style="color:#27ae60;">Succès</h3>
+          <p>{{ message }}</p>
+        </div>
+      {% else %}
+        <div class="card" style="background-color:#fadbd8; border-left:4px solid #e74c3c;">
+          <h3 style="color:#e74c3c;">Erreur</h3>
+          <p>{{ message }}</p>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
     <div class="container">
         {% if error_message %}
             <div class="card" style="background-color: #fadbd8; border-left: 4px solid #e74c3c;">

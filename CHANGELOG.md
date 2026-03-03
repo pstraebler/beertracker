@@ -6,6 +6,7 @@
 	- add : display users stats on dashboard for current year
 	- add : display beertracker version on login footer
 	- change : stats on admin panel are displayed only for current year
+	- change : refreshing admin page no longer resubmits a user creation or import
 
 ## 1.0.0 - 2026-03-02
 
