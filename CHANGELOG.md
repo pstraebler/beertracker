@@ -4,6 +4,7 @@
 	- add : add favicon
 	- add : check if user is already connected
 	- add : display users stats on dashboard for current year
+	- add : display beertracker version on login footer
 	- change : stats on admin panel are displayed only for current year
 
 ## 1.0.0 - 2026-03-02
