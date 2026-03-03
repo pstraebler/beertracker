@@ -122,8 +122,19 @@ def logout():
 def dashboard():
     if session.get('is_admin'):
         return redirect(url_for('admin'))
-    
-    return render_template('dashboard.html', username=session['username'])
+
+    top_drinkers = get_top_drinkers()  # déjà existant dans utils.py
+    top_drinkers = top_drinkers[:3]    # max 3
+
+    # Règle: si 1 seul utilisateur (ou 0), on n'affiche pas le tableau
+    show_ranking = len(top_drinkers) >= 2
+
+    return render_template(
+        'dashboard.html',
+        username=session['username'],
+        top_drinkers=top_drinkers,
+        show_ranking=show_ranking
+    )
 
 @app.route('/api/consumption', methods=['GET', 'POST'])
 @login_required

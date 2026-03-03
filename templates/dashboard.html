@@ -130,6 +130,36 @@
                 <canvas id="totalChart"></canvas>
             </div>
         </div>
+
+        {% if show_ranking %}
+<div class="card">
+    <h3>Classement des plus gros buveurs</h3>
+    <table class="ranking-table">
+        <thead>
+            <tr>
+                <th>Rang</th>
+                <th>Utilisateur</th>
+                <th>Pintes</th>
+                <th>Demis</th>
+                <th>33cl</th>
+                <th>Total en L</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for drinker in top_drinkers %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ drinker.username }}</td>
+                <td>{{ drinker.total_pints or 0 }}</td>
+                <td>{{ drinker.total_half_pints or 0 }}</td>
+                <td>{{ drinker.total_33cl or 0 }}</td>
+                <td><strong>{{ drinker.total_liters or 0 }} L</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
         
         <div class="export-section">
             <div class="card">
