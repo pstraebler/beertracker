@@ -225,32 +225,38 @@ def import_csv(file_content, user_id=None, all_users=False):
 
     return imported_count, errors, created_users
 
-def get_top_drinkers():
+def get_top_drinkers(year=None):
     """Obtenir le classement des plus gros buveurs"""
+    if year is None:
+        year = date.today().year
+
+    start = f"{year}-01-01"
+    end = f"{year}-12-31"
+
     conn = Database.get_connection()
     cursor = conn.cursor()
-    
-    cursor.execute('''
-        SELECT users.username, 
-            SUM(consumption.pints) as total_pints,
-            SUM(consumption.half_pints) as total_half_pints,
-            SUM(consumption.liters_33) as total_33cl,
+    cursor.execute("""
+        SELECT
+            users.username,
+            SUM(consumption.pints) AS total_pints,
+            SUM(consumption.half_pints) AS total_half_pints,
+            SUM(consumption.liters_33) AS total_33cl,
             ROUND(
-                (SUM(consumption.pints) * 0.5) + 
-                (SUM(consumption.half_pints) * 0.25) + 
-                (SUM(consumption.liters_33) * 0.33), 
-                2
-            ) as total_liters
+                SUM(consumption.pints) * 0.5 +
+                SUM(consumption.half_pints) * 0.25 +
+                SUM(consumption.liters_33) * 0.33, 2
+            ) AS total_liters
         FROM users
-        LEFT JOIN consumption ON users.id = consumption.user_id
+        LEFT JOIN consumption
+            ON users.id = consumption.user_id
+            AND consumption.date >= ?
+            AND consumption.date <= ?
         WHERE users.is_admin = 0
         GROUP BY users.id, users.username
         ORDER BY total_liters DESC
-    ''')
-    
+    """, (start, end))
     drinkers = cursor.fetchall()
     conn.close()
-    
     return drinkers
 
 def check_weekly_drinking_days(user_id, current_date):

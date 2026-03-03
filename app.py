@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from models import Database
 from auth import hash_password, verify_password, login_required, admin_required, verify_user_exists, bcrypt
 from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, calculate_weekly_stats
@@ -123,17 +123,17 @@ def dashboard():
     if session.get('is_admin'):
         return redirect(url_for('admin'))
 
-    top_drinkers = get_top_drinkers()  # déjà existant dans utils.py
-    top_drinkers = top_drinkers[:3]    # max 3
+    current_year = date.today().year
+    top_drinkers = get_top_drinkers(current_year)[:3]
 
-    # Règle: si 1 seul utilisateur (ou 0), on n'affiche pas le tableau
     show_ranking = len(top_drinkers) >= 2
 
     return render_template(
         'dashboard.html',
         username=session['username'],
         top_drinkers=top_drinkers,
-        show_ranking=show_ranking
+        show_ranking=show_ranking,
+        ranking_year=current_year
     )
 
 @app.route('/api/consumption', methods=['GET', 'POST'])
@@ -188,9 +188,10 @@ def api_export():
 @admin_required
 def admin():
     users = Database.get_all_users()
-    top_drinkers = get_top_drinkers()
+    current_year = date.today().year
+    top_drinkers = get_top_drinkers(current_year)
     
-    return render_template('admin.html', users=users, top_drinkers=top_drinkers)
+    return render_template('admin.html', users=users, top_drinkers=top_drinkers, ranking_year=current_year)
 
 @app.route('/admin/user/create', methods=['POST'])
 @admin_required
@@ -288,7 +289,7 @@ def admin_import():
     
     # Pour afficher le message, utiliser les templates avec variables
     users = Database.get_all_users()
-    top_drinkers = get_top_drinkers()
+    top_drinkers = get_top_drinkers(date.today().year)
     
     return render_template('admin.html', 
                          users=users, 
