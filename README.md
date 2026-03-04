@@ -43,7 +43,12 @@ cp .env.example .env
 
 **⚠️ Important** : Modifiez les valeurs suivantes dans `.env` :
 
-- `SECRET_KEY` : Clé secrète pour les sessions Flask (générez une chaîne aléatoire longue)
+- `SECRET_KEY` : Clé secrète pour les sessions Flask (générez une chaîne aléatoire longue) :
+		
+		$ python -c 'import secrets; print(secrets.token_hex(32))' 
+		OU
+		$ openssl rand -hex 32
+
 - `APP_PORT` : Port sur lequel l'application va écouter
 - `HOST_PORT` : Port sur lequel l'application sera exposée (uniquement pour Docker)
 - `ADMIN_USERNAME` : Facultatif. Nom d'utilisateur de l'administrateur (par défaut : `admin`)
@@ -59,7 +64,8 @@ docker-compose up -d --build
 Il est également possible d'utiliser l'image Beertracker depuis le *Docker Hub* :
 
 ```bash
-docker run --rm --env-file=.env -p 8080:8080 pierrestraebler/beertracker:latest
+mkdir beertracker-data
+docker run --rm -v ./beertracker-data:/app/data --env-file=.env -p 8080:8080 pierrestraebler/beertracker:latest
 ```
 
 ### Via Python
