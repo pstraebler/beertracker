@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.0 - 2026-03-
+## 1.1.0 - 2026-03-04
 	- add : add favicon
 	- add : check if user is already connected
 	- add : display users stats on dashboard for current year
