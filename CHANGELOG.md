@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1 - 2026-03-11
+	- change : dashboard - alerts are now displayed at the top of the page
+
 ## 1.1.0 - 2026-03-04
 	- add : add favicon
 	- add : check if user is already connected
