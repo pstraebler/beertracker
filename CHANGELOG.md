@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.0 - 2026-04-
+
+🇬🇧 BeerTracker is now avaiable in English !
+
+	- add : language is automatically detected based on your browser settings
+	- add : button to manually switch between English and French
+
 ## 1.1.1 - 2026-03-11
 	- change : dashboard - alerts are now displayed at the top of the page
 

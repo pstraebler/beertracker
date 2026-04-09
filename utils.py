@@ -100,23 +100,17 @@ def calculate_stats(user_id, start_date=None, end_date=None):
                         processed_times.add(time_str)
     
     # Vérifier si c'est le 3ème jour de la semaine
-    is_third_day, drinking_days = check_weekly_drinking_days(user_id, today_str)
-    
     is_third_day_or_more, drinking_days = check_weekly_drinking_days(user_id, today_str)
     
     if is_third_day_or_more:
-        # Formater les jours en français
-        days_fr = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
-        day_names = []
-        
+        day_indexes = []
         for day_str in sorted(drinking_days):
             day_obj = datetime.strptime(day_str, '%Y-%m-%d')
-            day_names.append(days_fr[day_obj.weekday()])
+            day_indexes.append(day_obj.weekday())
         
         # Nombre de jours de consommation
         num_days = len(drinking_days)
         
-        # Ajouter un avertissement dans le même format que les 3h
         three_hour_warnings.append({
             'start_time': '00:00:00',
             'end_time': '23:59:59',
@@ -125,7 +119,8 @@ def calculate_stats(user_id, start_date=None, end_date=None):
             'end_date': today_str,
             'items': [],
             'type': 'weekly',
-            'message': f"⚠️ {num_days} jours de consommation cette semaine ({', '.join(day_names)})"
+            'num_days': num_days,
+            'day_indexes': day_indexes
         })
     
     return {
@@ -312,8 +307,7 @@ def calculate_weekly_stats(user_id):
         week_end = week_start + timedelta(days=6)
         weeks.append({
             'start': week_start,
-            'end': week_end,
-            'label': f"Semaine du {week_start.strftime('%d/%m')}"
+            'end': week_end
         })
     
     # Récupérer les données pour chaque semaine
@@ -336,7 +330,8 @@ def calculate_weekly_stats(user_id):
             total_liters += (pints * 0.5) + (half_pints * 0.25) + (liters_33 * 0.33)
         
         weekly_data.append({
-            'label': week['label'],
+            'week_start': week['start'].isoformat(),
+            'week_end': week['end'].isoformat(),
             'total_liters': round(total_liters, 2)
         })
     

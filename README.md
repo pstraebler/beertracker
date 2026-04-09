@@ -1,39 +1,41 @@
 # 🍺 BeerTracker
 
-Application web de suivi de consommation de bière avec gestion multi-utilisateurs et tableau de bord statistique.
+[French version](./README.fr.md)
+
+A web app to track beer consumption with multi-user management and a statistical dashboard.
 
 <img width="2560" height="1664" alt="beertracker" src="https://github.com/user-attachments/assets/fbefe3bd-58ac-49df-90dc-58cdf3db4856" />
 
-## Fonctionnalités
+## Features
 
-### Pour les utilisateurs
-- **Suivi de consommation** : Enregistrement de pintes (50cl), demis (25cl) et 33cl avec horodatage
-- **Mode soirée** : Mode spécial qui reste actif jusqu’à 7h le lendemain pour éviter de retirer ses bières du compteur sous l’effet de l’ivresse.
-- **Statistiques personnelles** : 
-  - Visualisation du total en litres
-  - Estimation du coût (~6€ pour 50cL de bière)
-  - Graphiques mensuels et hebdomadaires (4 dernières semaines)
-  - Timeline complète de consommation
-- **Alertes intelligentes** :
-  - Avertissement si plus de 1,5L consommés sur une fenêtre glissante de 3 heures
-  - Alerte à partir de 3 jours de consommation dans la même semaine
-- **Consommation des autres utilisateurs** : Le top 3 des utilisateurs ayant consommé le plus de bières pour l'année en cours est affiché, avec le détail des consommations
-- **Export de données** : Téléchargement de l'historique personnel en CSV
+### For users
+- **Consumption tracking**: Log pints (50cl), half-pints (25cl), and 33cl beers with timestamps.
+- **Night mode**: A special mode that stays active until 7:00 AM the next day to prevent removing beers from the counter while intoxicated.
+- **Personal stats**:
+  - Total liters consumed
+  - Cost estimate (~€6 for a 50cl beer)
+  - Monthly and weekly charts (last 4 weeks)
+  - Full consumption timeline
+- **Smart alerts**:
+  - Warning if more than 1.5L is consumed within a rolling 3-hour window
+  - Alert starting from 3 drinking days within the same week
+- **Other users' consumption**: Displays the top 3 users with the highest beer consumption for the current year, with detailed breakdowns.
+- **Data export**: Download personal history as CSV.
 
-### Pour les administrateurs
-- **Gestion des utilisateurs** :
-  - Création, modification et suppression de comptes
-  - Changement de mot de passe
-  - Activation/désactivation du mode soirée pour chaque utilisateur
-- **Classement** : Tableau contenant tous les utilisateurs, avec leurs consommations (pintes, demis, 33cl) pour l'année en cours
-- **Import/Export global** : Gestion des données de tous les utilisateurs en CSV
-- **Création automatique d'utilisateurs** : Lors de l'import CSV, les utilisateurs manquants sont créés avec un mot de passe temporaire
+### For administrators
+- **User management**:
+  - Create, update, and delete accounts
+  - Change passwords
+  - Enable/disable night mode for each user
+- **Ranking**: Table containing all users and their consumption (pints, half-pints, 33cl) for the current year.
+- **Global import/export**: Manage all users' data via CSV.
+- **Automatic user creation**: During CSV import, missing users are created with a temporary password.
 
-## Prérequis
+## Requirements
 
-- Docker / Docker Compose (recommandé) ou Python (3.11 +)
+- Docker / Docker Compose (recommended) or Python (3.11+)
 
-## Déploiement 
+## Deployment
 
 ```bash
 git clone https://github.com/pstraebler/beertracker.git
@@ -41,36 +43,38 @@ cd beertracker
 cp .env.example .env
 ```
 
-**⚠️ Important** : Modifiez les valeurs suivantes dans `.env` :
+**⚠️ Important**: Update the following values in `.env`:
 
-- `SECRET_KEY` : Clé secrète pour les sessions Flask (générez une chaîne aléatoire longue) :
-		
-		$ python -c 'import secrets; print(secrets.token_hex(32))' 
-		OU
-		$ openssl rand -hex 32
+- `SECRET_KEY`: Secret key for Flask sessions (generate a long random string):
 
-- `APP_PORT` : Port sur lequel l'application va écouter
-- `HOST_PORT` : Port sur lequel l'application sera exposée (uniquement pour Docker)
-- `ADMIN_USERNAME` : Facultatif. Nom d'utilisateur de l'administrateur (par défaut : `admin`)
-- `ADMIN_PASSWORD` : Mot de passe de l'administrateur
-- `USE_HTTPS` : À ne pas activer sur des environnements locaux (défaut : `0`)
+    ```bash
+    python -c 'import secrets; print(secrets.token_hex(32))'
+    # OR
+    openssl rand -hex 32
+    ```
 
-### Via Docker (recommandé)
+- `APP_PORT`: Port the app will listen on
+- `HOST_PORT`: Port exposed by Docker (Docker only)
+- `ADMIN_USERNAME`: Optional. Admin username (default: `admin`)
+- `ADMIN_PASSWORD`: Admin password
+- `USE_HTTPS`: Do not enable in local environments (default: `0`)
+
+### With Docker (recommended)
 
 ```bash
 docker-compose up -d --build
 ```
 
-Il est également possible d'utiliser l'image Beertracker depuis le *Docker Hub* :
+You can also use the Beertracker image from Docker Hub:
 
 ```bash
 mkdir beertracker-data
 docker run --rm -v ./beertracker-data:/app/data --env-file=.env -p 8080:8080 pierrestraebler/beertracker:latest
 ```
 
-### Via Python
+### With Python
 
-*Paquets nécessaires : python3, python3-pip, python3-venv*
+*Required packages: python3, python3-pip, python3-venv*
 
 ```bash
 python3 -m venv ./beertracker-venv
@@ -79,32 +83,32 @@ pip install -r requirements.txt
 python app.py
 ```
 
-### Premier démarrage
+### First startup
 
-L'application est accessible sur **http://localhost:8080**
+The app is available at **http://localhost:8080**
 
-1. Connectez-vous avec les identifiants admin configurés
-2. Créez les utilisateurs depuis le panel d'administration
-3. Les utilisateurs peuvent se connecter avec leurs identifiants
+1. Log in with the configured admin credentials.
+2. Create users from the admin panel.
+3. Users can log in with their own credentials.
 
-## Stockage des données
+## Data storage
 
-La base de données SQLite est stockée dans le volume Docker `beertracker_data` 
-Le fichier est situé dans `./data/db.sqlite3`. 
+The SQLite database is stored in the Docker volume `beertracker_data`.
+The file is located at `./data/db.sqlite3`.
 
-## Format d'import CSV
+## CSV import format
 
-### Pour l'administrateur (import complet)
+### For administrator (full import)
 
 ```csv
-Utilisateur,Date,Heure,Pintes,Demis,33cl
+User,Date,Time,Pints,HalfPints,33cl
 baptiste,2026-01-15,20:30:00,2,1,0
 guy,2026-01-15,21:00:00,0,2,1
 ```
 
-- **Utilisateur** : Nom d'utilisateur (créé automatiquement s'il n'existe pas)
-- **Date** : Format `YYYY-MM-DD`
-- **Heure** : Format `HH:MM:SS` (optionnel, par défaut `00:00:00`)
-- **Pintes** : Nombre de pintes (50cl)
-- **Demis** : Nombre de demis (25cl)
-- **33cl** : Nombre de bouteilles/canettes de 33cl
+- **User**: Username (created automatically if it does not exist)
+- **Date**: `YYYY-MM-DD` format
+- **Time**: `HH:MM:SS` format (optional, default `00:00:00`)
+- **Pints**: Number of pints (50cl)
+- **HalfPints**: Number of half-pints (25cl)
+- **33cl**: Number of 33cl bottles/cans

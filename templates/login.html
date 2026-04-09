@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ lang|default('fr') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,19 +8,19 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<body class="login-page">
+<body class="login-page" data-i18n-title="page_login_title" data-force-browser-language="true">
     <div class="login-container">
         <div class="login-box">
             <h1>🍺 BeerTracker</h1>
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
-                    <label for="username">Pseudo</label>
+                    <label for="username" data-i18n="login_username">Pseudo</label>
                     <input type="text" id="username" name="username" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Mot de passe</label>
+                    <label for="password" data-i18n="login_password">Mot de passe</label>
                     <input type="password" id="password" name="password" required>
                 </div>
                 
@@ -28,13 +28,13 @@
                     <div class="error">{{ error }}</div>
                 {% endif %}
                 
-                <button type="submit" class="btn-primary">Connexion</button>
+                <button type="submit" class="btn-primary" data-i18n="login_button">Connexion</button>
             </form>
         </div>
     </div>
      <div class="bottom-message">
         <p>BeerTracker v1.1.1 - Developed with 🍺 by <a href="https://github.com/pstraebler">pistrbl</a> (and a lot of AI)</p>
      </div>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
 </body>
 </html>
-

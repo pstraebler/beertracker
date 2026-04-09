@@ -5,6 +5,7 @@ from auth import hash_password, verify_password, login_required, admin_required,
 from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, calculate_weekly_stats
 from config import Config
 from flask_wtf.csrf import CSRFProtect
+from i18n import get_request_language, t
 import os
 import uuid
 import logging
@@ -22,6 +23,11 @@ logging.basicConfig(
     datefmt='%d/%b/%Y %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
+
+
+@app.context_processor
+def inject_language():
+    return {"lang": get_request_language()}
 
 # Initialiser la base de données au démarrage
 Database.init_db()
@@ -104,11 +110,11 @@ def login():
             else:
                 # Mot de passe utilisateur incorrect
                 app.logger.warning(f'{client_ip} Authentification failed for user {username} (incorrect password)')
-                return render_template('login.html', error='Mot de passe incorrect')
+                return render_template('login.html', error=t("login_incorrect_password"))
         else:
             # Utilisateur n'existe pas
             app.logger.warning(f'{client_ip} Authentification failed for user {username} (unknown user)')
-            return render_template('login.html', error='Utilisateur non trouvé')
+            return render_template('login.html', error=t("login_unknown_user"))
     
     return render_template('login.html')
 
@@ -200,13 +206,13 @@ def admin_create_user():
     password = request.form.get('password', '').strip()
 
     if not username or not password:
-        flash("Le nom d'utilisateur et le mot de passe sont requis", "error")
+        flash(t("admin_user_required"), "error")
         return redirect(url_for('admin'))  
 
     password_hash = hash_password(password)
-    success, message = Database.create_user(username, password_hash)
+    success, _ = Database.create_user(username, password_hash)
 
-    flash(message, "success" if success else "error")
+    flash(t("admin_user_created") if success else t("admin_user_create_error"), "success" if success else "error")
     return redirect(url_for('admin'))  
 
 @app.route('/admin/user/<user_id>/delete', methods=['POST'])
@@ -249,25 +255,25 @@ def admin_export():
 @admin_required
 def admin_import():
     if 'file' not in request.files:
-        flash("Aucun fichier envoyé.", "error")
+        flash(t("admin_no_file_sent"), "error")
         return redirect(url_for('admin'))
 
     file = request.files['file']
     if not file.filename:
-        flash("Aucun fichier sélectionné.", "error")
+        flash(t("admin_no_file_selected"), "error")
         return redirect(url_for('admin'))
 
     imported_count, errors, created_users = import_csv(file.read(), all_users=True)
 
     # Construit le message (reprend ta logique actuelle)
-    message = f"Import terminé: {imported_count} entrées importées"
+    message = t("admin_import_completed", count=imported_count)
     if created_users:
-        message += f"\nUtilisateurs créés: {len(created_users)}"
+        message += f"\n{t('admin_import_users_created', count=len(created_users))}"
         for u in created_users:
             message += f"\n- {u['username']} / {u['password']}"
-        message += "\nIMPORTANT: Changez ces mots de passe par défaut !"
+        message += f"\n{t('admin_import_important')}"
     if errors:
-        message += f"\nErreurs: {len(errors)}"
+        message += f"\n{t('admin_import_errors', count=len(errors))}"
         for e in errors:
             message += f"\n- {e}"
 
@@ -309,8 +315,8 @@ def toggle_night_mode(user_id):
     # Appliquer le changement
     Database.set_night_mode(user_id, new_state)
     
-    action = "activé" if new_state else "désactivé"
-    return jsonify({'success': True, 'message': f'Mode soirée {action}'})
+    action = t("night_mode_enabled") if new_state else t("night_mode_disabled")
+    return jsonify({'success': True, 'message': action})
 
 
 @app.route('/api/night-mode-status/<user_id>', methods=['GET'])
@@ -337,17 +343,17 @@ def change_password():
         # Validation
         if not current_password or not new_password or not confirm_password:
             return render_template('password.html', 
-                                 error="Tous les champs sont requis",
+                                 error=t("password_all_fields_required"),
                                  username=session['username'])
         
         if new_password != confirm_password:
             return render_template('password.html', 
-                                 error="Les nouveaux mots de passe ne correspondent pas",
+                                 error=t("password_mismatch"),
                                  username=session['username'])
         
         if len(new_password) < 6:
             return render_template('password.html', 
-                                 error="Le mot de passe doit contenir au moins 6 caractères",
+                                 error=t("password_too_short"),
                                  username=session['username'])
         
         # Vérifier le mot de passe actuel
@@ -360,7 +366,7 @@ def change_password():
         
         if not user or not verify_password(current_password, user['password']):
             return render_template('password.html', 
-                                 error="Mot de passe actuel incorrect",
+                                 error=t("password_current_incorrect"),
                                  username=session['username'])
         
         # Changer le mot de passe
@@ -369,7 +375,7 @@ def change_password():
         
         app.logger.info(f"Password changed successfully for user {username}")
         return render_template('password.html', 
-                             success="Mot de passe modifié avec succès",
+                             success=t("password_changed_success"),
                              username=session['username'])
     
     return render_template('password.html', username=session['username'])

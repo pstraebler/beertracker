@@ -199,6 +199,25 @@ body {
     background-color: #95a5a6;
 }
 
+.language-toggle-btn {
+    background: transparent !important;
+    border: none;
+    box-shadow: none;
+    color: white;
+    font-size: 1.8rem;
+    line-height: 1;
+    padding: 0.15rem 0.35rem;
+    min-width: auto;
+}
+
+.language-toggle-btn:hover,
+.language-toggle-btn:focus {
+    background: transparent !important;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.9;
+}
+
 
 .btn-danger {
     background-color: var(--danger-color);

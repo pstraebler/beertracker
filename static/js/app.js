@@ -1,4 +1,19 @@
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+const i18n = window.BeerTrackerI18n;
+
+function t(key, vars = null) {
+    if (i18n && typeof i18n.t === 'function') {
+        return i18n.t(key, vars);
+    }
+    return key;
+}
+
+function currentLocale() {
+    if (i18n && typeof i18n.getCurrentLanguage === 'function') {
+        return i18n.getCurrentLanguage() === 'fr' ? 'fr-FR' : 'en-US';
+    }
+    return 'en-US';
+}
 
 let currentBeer = {
     pints: 0,
@@ -43,6 +58,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     loadTodayConsumption();
     loadNightModeStatus();
+
+    document.addEventListener('languageChanged', function() {
+        updateNightModeUI();
+        loadStats();
+    });
 });
 
 function loadNightModeStatus() {
@@ -52,7 +72,7 @@ function loadNightModeStatus() {
             nightModeEnabled = data.night_mode_enabled;
             updateNightModeUI();
         })
-        .catch(error => console.error('Erreur:', error));
+        .catch(error => console.error('Error:', error));
 }
 
 function toggleNightMode() {
@@ -74,23 +94,23 @@ function toggleNightMode() {
         
         confirmDiv.innerHTML = `
             <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); max-width: 400px;">
-                <h2 style="margin-bottom: 1rem; color: #2c3e50;">🌙 Activer le Mode Soirée ?</h2>
+                <h2 style="margin-bottom: 1rem; color: #2c3e50;">${t('night_mode_modal_title')}</h2>
                 <p style="margin-bottom: 1rem; color: #475569;">
-                    Le mode soirée vous empêchera de :
+                    ${t('night_mode_modal_intro')}
                 </p>
                 <ul style="margin-bottom: 1.5rem; margin-left: 1.5rem; color: #475569;">
-                    <li>Décrémenter le nombre de bières</li>
-                    <li>Modifier la date</li>
+                    <li>${t('night_mode_modal_item_1')}</li>
+                    <li>${t('night_mode_modal_item_2')}</li>
                 </ul>
                 <p style="margin-bottom: 1.5rem; color: #f39c12; font-weight: bold;">
-                    ⏰ Le mode se désactivera automatiquement demain à 7h.
+                    ${t('night_mode_modal_warning')}
                 </p>
                 <div style="display: flex; gap: 1rem;">
                     <button onclick="this.parentElement.parentElement.parentElement.remove()" style="flex: 1; padding: 0.75rem; background-color: #bdc3c7; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
-                        Annuler
+                        ${t('cancel')}
                     </button>
                     <button onclick="activateNightMode()" style="flex: 1; padding: 0.75rem; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
-                        Activer
+                        ${t('activate')}
                     </button>
                 </div>
             </div>
@@ -117,8 +137,8 @@ function activateNightMode() {
         showNightModeNotification();
     })
     .catch(error => {
-        console.error('Erreur:', error);
-        alert('Erreur lors de l\'activation du mode soirée');
+        console.error('Error:', error);
+        alert(t('error_night_mode_activation'));
     });
 }
 
@@ -128,12 +148,12 @@ function updateNightModeUI() {
     
     if (nightModeBtn) {
         if (nightModeEnabled) {
-            nightModeBtn.textContent = '🌙 Mode Soirée ACTIF';
+            nightModeBtn.textContent = t('night_mode_active');
             nightModeBtn.style.backgroundColor = '#e74c3c';
             nightModeBtn.style.color = 'white';
             nightModeBtn.disabled = true;
         } else {
-            nightModeBtn.textContent = '🌙 Activer Mode Soirée';
+            nightModeBtn.textContent = t('night_mode_activate');
             nightModeBtn.style.backgroundColor = '#3498db';
             nightModeBtn.style.color = 'white';
             nightModeBtn.disabled = false;
@@ -161,7 +181,7 @@ function showNightModeNotification() {
         animation: slideIn 0.3s ease-out;
     `;
     
-    notificationDiv.innerHTML = `🌙 Mode Soirée activé ! Jusqu'à demain 7h.`;
+    notificationDiv.innerHTML = t('night_mode_notification');
     
     document.body.appendChild(notificationDiv);
     
@@ -212,7 +232,7 @@ function showNightModeDecrementNotification() {
     font-weight: bold;
     animation: slideIn 0.3s ease-out;
   `;
-  notificationDiv.innerText = '⚠️ Mode Soirée actif : impossible de retirer une bière 😏';
+  notificationDiv.innerText = t('night_mode_block_decrement');
   document.body.appendChild(notificationDiv);
   
   setTimeout(() => {
@@ -252,7 +272,7 @@ function loadTodayConsumption() {
             document.getElementById('liters_33-count').innerText = currentBeer.liters_33;
         })
         .catch(error => {
-            console.error('Erreur lors du chargement:', error);
+            console.error('Error while loading:', error);
         });
 }
 
@@ -289,18 +309,18 @@ function saveBeerAutomatic(type, value) {
         savingInProgress = false;
     })
     .catch(error => {
-        console.error('Erreur:', error);
+        console.error('Error:', error);
         savingInProgress = false;
         currentBeer[type] = Math.max(0, currentBeer[type] - value);
         document.getElementById(`${type}-count`).innerText = currentBeer[type];
-        alert('Erreur lors de l\'enregistrement. Vérifiez votre connexion.');
+        alert(t('error_save_connection'));
     });
 }
 
 function showSaveNotification(type, value) {
     const beerLabels = {
-        'pints': 'Pinte',
-        'half_pints': 'Demi',
+        'pints': t('pints'),
+        'half_pints': t('halves'),
         'liters_33': '33cl'
     };
     
@@ -368,7 +388,7 @@ function loadStats() {
             updateStatsDisplay(data);
             updateCharts(data);
         })
-        .catch(error => console.error('Erreur:', error));
+        .catch(error => console.error('Error:', error));
 }
 
 // Fonction pour formater l'heure en format court (14h56)
@@ -430,9 +450,15 @@ function updateStatsDisplay(data) {
                 
                 if (warning.type === 'weekly') {
                     // Avertissement 3ème jour
-                    warningDiv.innerHTML = `
-                        <strong style="font-size: 1.1rem;">${warning.message}</strong>
-                    `;
+                    const dayIndexes = warning.day_indexes || [];
+                    const localizedDays = dayIndexes.map(dayIndex => t(`day_${dayIndex}`));
+                    const weeklyMessage = (localizedDays.length > 0 || warning.num_days)
+                        ? t('days_of_drinking', {
+                            count: warning.num_days || localizedDays.length,
+                            days: localizedDays.join(', ')
+                        })
+                        : (warning.message || '');
+                    warningDiv.innerHTML = `<strong style="font-size: 1.1rem;">${weeklyMessage}</strong>`;
                 } else {
                     // Avertissement 3h (existant)
                     const items = warning.items.map(item => 
@@ -440,8 +466,8 @@ function updateStatsDisplay(data) {
                     ).join('');
                     
                     warningDiv.innerHTML = `
-                        <strong>⚠️ Plus de 1.5L bu depuis ${formatTime(warning.start_time)}</strong><br>
-                        Total: <strong>${warning.total_liters}L</strong><br>
+                        <strong>${t('alert_three_hour_title', { time: formatTime(warning.start_time) })}</strong><br>
+                        ${t('alert_total')}: <strong>${warning.total_liters}L</strong><br>
                         <ul style="margin-top: 0.5rem; margin-bottom: 0;">
                             ${items}
                         </ul>
@@ -458,7 +484,7 @@ function updateStatsDisplay(data) {
 
 function updateCharts(data) {
     if (typeof Chart === 'undefined') {
-        console.error('Chart.js n\'est pas disponible');
+        console.error('Chart.js is not available');
         return;
     }
     updateMonthlyChart(data.monthly_stats);
@@ -487,18 +513,18 @@ function updateMonthlyChart(monthlyStats) {
         data: {
             labels: months.map(m => {
                 const date = new Date(m + '-01');
-                return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+                return date.toLocaleDateString(currentLocale(), { month: 'long', year: 'numeric' });
             }),
             datasets: [
                 {
-                    label: 'Pintes',
+                    label: t('pints'),
                     data: pintData,
                     backgroundColor: '#3498db',
                     borderColor: '#2980b9',
                     borderWidth: 1
                 },
                 {
-                    label: 'Demis',
+                    label: t('halves'),
                     data: halfData,
                     backgroundColor: '#e74c3c',
                     borderColor: '#c0392b',
@@ -535,7 +561,7 @@ function updateMonthlyChart(monthlyStats) {
 function updateTotalChart(records) {
     const ctx = document.getElementById('totalChart');
     if (!ctx) {
-        console.warn('Element totalChart non trouvé');
+        console.warn('Element totalChart not found');
         return;
     }
 
@@ -553,7 +579,7 @@ function updateTotalChart(records) {
     const dates = Object.keys(dailyLitersMap).sort((a, b) => new Date(a) - new Date(b));
 
     let cumulativeLiters = 0;
-    const labels = dates.map(d => new Date(d).toLocaleDateString('fr-FR'));
+    const labels = dates.map(d => new Date(d).toLocaleDateString(currentLocale()));
     const data = dates.map(d => {
         cumulativeLiters += dailyLitersMap[d];
         return parseFloat(cumulativeLiters.toFixed(2));
@@ -569,7 +595,7 @@ function updateTotalChart(records) {
             labels: labels,
             datasets: [
                 {
-                    label: 'Total cumulé (L)',
+                    label: t('chart_cumulative_label'),
                     data: data,
                     borderColor: '#27ae60',
                     backgroundColor: 'rgba(39, 174, 96, 0.1)',
@@ -598,11 +624,16 @@ function updateTotalChart(records) {
 function updateWeeklyChart(weeklyStats) {
     const ctx = document.getElementById('weeklyChart');
     if (!ctx) {
-        console.warn('Element weeklyChart non trouvé');
+        console.warn('Element weeklyChart not found');
         return;
     }
     
-    const labels = weeklyStats.map(w => w.label);
+    const labels = weeklyStats.map(w => {
+        if (!w.week_start) return '';
+        const date = new Date(w.week_start);
+        const formatted = date.toLocaleDateString(currentLocale(), { day: '2-digit', month: '2-digit' });
+        return `${t('week_of')} ${formatted}`;
+    });
     const litersData = weeklyStats.map(w => w.total_liters);
     
     if (weeklyChart) {
@@ -614,7 +645,7 @@ function updateWeeklyChart(weeklyStats) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Litres consommés',
+                label: t('chart_weekly_dataset'),
                 data: litersData,
                 backgroundColor: '#3498db',
                 borderColor: '#2980b9',
@@ -631,7 +662,7 @@ function updateWeeklyChart(weeklyStats) {
                 },
                 title: {
                     display: true,
-                    text: '4 dernières semaines (en litres)',
+                    text: t('chart_weekly_title'),
                     font: {
                         size: 16
                     }
@@ -639,7 +670,7 @@ function updateWeeklyChart(weeklyStats) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.parsed.y + ' L';
+                            return context.parsed.y + ' ' + t('chart_unit_liters');
                         }
                     }
                 }
@@ -649,7 +680,7 @@ function updateWeeklyChart(weeklyStats) {
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return value + ' L';
+                            return value + ' ' + t('chart_unit_liters');
                         }
                     }
                 }

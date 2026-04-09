@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ lang|default('fr') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +8,14 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<body>
+<body data-i18n-title="page_admin_title">
     <div class="navbar">
         <div class="navbar-content">
-            <h2>🍺 Administration</h2>
-            <a href="/logout" class="btn-secondary">Déconnexion</a>
+            <h2 data-i18n="admin_title">🍺 Administration</h2>
+            <div style="display: flex; gap: 1rem;">
+                <button type="button" class="btn-secondary language-toggle-btn"></button>
+                <a href="/logout" class="btn-secondary" data-i18n="navbar_logout">Déconnexion</a>
+            </div>
         </div>
     </div>
     
@@ -21,12 +24,12 @@
     {% for category, message in messages %}
       {% if category == 'success' %}
         <div class="card" style="background-color:#d4edda; border-left:4px solid #27ae60;">
-          <h3 style="color:#27ae60;">Succès</h3>
+          <h3 style="color:#27ae60;" data-i18n="success">Succès</h3>
           <p>{{ message }}</p>
         </div>
       {% else %}
         <div class="card" style="background-color:#fadbd8; border-left:4px solid #e74c3c;">
-          <h3 style="color:#e74c3c;">Erreur</h3>
+          <h3 style="color:#e74c3c;" data-i18n="error">Erreur</h3>
           <p>{{ message }}</p>
         </div>
       {% endif %}
@@ -37,31 +40,31 @@
     <div class="container">
         {% if error_message %}
             <div class="card" style="background-color: #fadbd8; border-left: 4px solid #e74c3c;">
-                <h3 style="color: #e74c3c;">❌ Erreur</h3>
+                <h3 style="color: #e74c3c;" data-i18n="error">❌ Erreur</h3>
                 <p>{{ error_message }}</p>
             </div>
         {% endif %}
 
         {% if success_message %}
             <div class="card" style="background-color: #d4edda; border-left: 4px solid #27ae60;">
-                <h3 style="color: #27ae60;">✅ Succès</h3>
+                <h3 style="color: #27ae60;" data-i18n="success">✅ Succès</h3>
                 <p>{{ success_message }}</p>
             </div>
         {% endif %}
         {% if import_message %}
             <div class="card {% if import_success %}success{% else %}warning{% endif %}">
-                <h3>{% if import_success %}✅ Import réussi{% else %}⚠️ Import avec problèmes{% endif %}</h3>
+                <h3 {% if import_success %}data-i18n="import_success"{% else %}data-i18n="import_partial"{% endif %}>{% if import_success %}✅ Import réussi{% else %}⚠️ Import avec problèmes{% endif %}</h3>
                 <div style="white-space: pre-wrap; font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; margin-top: 1rem;">{{ import_message }}</div>
             </div>
             
             {% if created_users %}
                 <div class="card warning" style="margin-top: 1rem;">
-                    <h3>👤 Utilisateurs créés automatiquement</h3>
+                    <h3 data-i18n="auto_created_users">👤 Utilisateurs créés automatiquement</h3>
                     <table class="ranking-table">
                         <thead>
                             <tr>
-                                <th>Utilisateur</th>
-                                <th>Mot de passe temporaire</th>
+                                <th data-i18n="user">Utilisateur</th>
+                                <th data-i18n="temp_password">Mot de passe temporaire</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,26 +76,26 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    <p style="margin-top: 1rem; color: #e67e22;"><strong>⚠️ Important:</strong> Ces utilisateurs ont un mot de passe temporaire. Demandez-leur de le changer lors de leur première connexion ou changez-le depuis le panel admin.</p>
+                    <p style="margin-top: 1rem; color: #e67e22;"><strong data-i18n="temp_password_warning">⚠️ Important:</strong> <span data-i18n="temp_password_warning_text">Ces utilisateurs ont un mot de passe temporaire. Demandez-leur de le changer lors de leur première connexion ou changez-le depuis le panel admin.</span></p>
                 </div>
             {% endif %}
         {% endif %}
         
         <div class="admin-section">
             <div class="card">
-                <h3>Gestion des utilisateurs</h3>
+                <h3 data-i18n="user_management">Gestion des utilisateurs</h3>
                 
                 <div class="admin-form">
-                    <h4>Créer un nouvel utilisateur</h4>
+                    <h4 data-i18n="create_user">Créer un nouvel utilisateur</h4>
                     <form method="POST" action="/admin/user/create">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="text" name="username" placeholder="Pseudo" required>
-                        <input type="password" name="password" placeholder="Mot de passe" required>
-                        <button type="submit" class="btn-primary">Créer</button>
+                        <input type="text" name="username" placeholder="Pseudo" data-i18n-placeholder="nickname_placeholder" required>
+                        <input type="password" name="password" placeholder="Mot de passe" data-i18n-placeholder="password_placeholder" required>
+                        <button type="submit" class="btn-primary" data-i18n="create">Créer</button>
                     </form>
                 </div>
                 
-                <h4>Utilisateurs existants</h4>
+                <h4 data-i18n="existing_users">Utilisateurs existants</h4>
                 <div class="users-list">
                     {% for user in users %}
                         <div class="user-item">
@@ -100,15 +103,15 @@
                             <div class="user-actions">
                                 <form method="POST" action="/admin/user/{{ user.id }}/password" class="inline-form">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <input type="password" name="password" placeholder="Nouveau mot de passe" required>
-                                    <button type="submit" class="btn-secondary btn-sm">Changer MDP</button>
+                                    <input type="password" name="password" placeholder="Nouveau mot de passe" data-i18n-placeholder="new_password_placeholder" required>
+                                    <button type="submit" class="btn-secondary btn-sm" data-i18n="change_password_short">Changer MDP</button>
                                 </form>
                                 <button onclick="toggleAdminNightMode('{{ user.id }}', '{{ user.username|e }}')" class="btn-sm" style="background-color: #f39c12; color: white;">
-                                        🌙 Mode Soirée
+                                        <span data-i18n="night_mode">🌙 Mode Soirée</span>
                                 </button>
-                                <form method="POST" action="/admin/user/{{ user.id }}/delete" class="inline-form" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                <form method="POST" action="/admin/user/{{ user.id }}/delete" class="inline-form" data-i18n-confirm="confirm_delete_user">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn-danger btn-sm">Supprimer</button>
+                                    <button type="submit" class="btn-danger btn-sm" data-i18n="delete">Supprimer</button>
                                 </form>
                             </div>
                         </div>
@@ -119,16 +122,16 @@
         
         <div class="admin-section">
             <div class="card">
-                <h3>Classement des plus gros buveurs (pour l'année {{ ranking_year }})</h3>
+                <h3 data-i18n-with-year="ranking_title" data-year="{{ ranking_year }}">Classement des plus gros buveurs (pour l'année {{ ranking_year }})</h3>
                 <table class="ranking-table">
                     <thead>
                         <tr>
-                            <th>Rang</th>
-                            <th>Utilisateur</th>
-                            <th>Pintes</th>
-                            <th>Demis</th>
+                            <th data-i18n="rank">Rang</th>
+                            <th data-i18n="user">Utilisateur</th>
+                            <th data-i18n="pints">Pintes</th>
+                            <th data-i18n="halves">Demis</th>
                             <th>33cl</th>
-                            <th>Total (en L)</th>
+                            <th data-i18n="liters_total_short">Total (en L)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -149,50 +152,50 @@
         
         <div class="admin-section">
             <div class="card">
-                <h3>Import / Export de données</h3>
+                <h3 data-i18n="import_export">Import / Export de données</h3>
                 
                 <div class="import-export">
                     <div>
-                        <h4>Exporter toutes les données</h4>
-                        <a href="/admin/export" class="btn-secondary">Télécharger CSV complet</a>
+                        <h4 data-i18n="export_all_data">Exporter toutes les données</h4>
+                        <a href="/admin/export" class="btn-secondary" data-i18n="export_full_csv">Télécharger CSV complet</a>
                     </div>
                     
                     <div>
-                        <h4>Importer des données</h4>
+                        <h4 data-i18n="import_data">Importer des données</h4>
                         <form method="POST" action="/admin/import" enctype="multipart/form-data">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="file" name="file" accept=".csv" required>
-                            <button type="submit" class="btn-secondary">Importer</button>
+                            <button type="submit" class="btn-secondary" data-i18n="import">Importer</button>
                         </form>
                         <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
-                            <strong>Format attendu:</strong> Utilisateur | Date | Pintes | Demis | 33cl<br>
-                            <strong>Les utilisateurs manquants seront créés automatiquement.</strong>
+                            <strong data-i18n="expected_format_label">Format attendu:</strong> <span data-i18n="expected_format_value">Utilisateur | Date | Pintes | Demis | 33cl</span><br>
+                            <strong data-i18n="missing_users_created">Les utilisateurs manquants seront créés automatiquement.</strong>
                         </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <script>
+    function toggleAdminNightMode(userId, username) {
+        fetch(`/admin/night-mode/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            const i18n = window.BeerTrackerI18n;
+            alert(i18n ? i18n.t('error_generic_update') : 'Erreur lors de la modification');
+        });
+    }
+    </script>
 </body>
 </html>
-<script>
-function toggleAdminNightMode(userId, username) {
-    fetch(`/admin/night-mode/${userId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        location.reload();
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        alert('Erreur lors de la modification');
-    });
-}
-</script>
-
-
