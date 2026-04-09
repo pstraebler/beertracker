@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 - 2026-04-
+## 2.0.0 - 2026-04-09
 
 🇬🇧 BeerTracker is now avaiable in English !
 
