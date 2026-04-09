@@ -132,33 +132,29 @@
             </div>
         </div>
 
-        {% if show_ranking %}
+{% if show_ranking %}
 <div class="card">
     <h3 data-i18n-with-year="ranking_title" data-year="{{ ranking_year }}">Classement des plus gros buveurs (pour l'année {{ ranking_year }})</h3>
-    <table class="ranking-table">
-        <thead>
-            <tr>
-                <th data-i18n="rank">Rang</th>
-                <th data-i18n="user">Utilisateur</th>
-                <th data-i18n="pints">Pintes</th>
-                <th data-i18n="halves">Demis</th>
-                <th>33cl</th>
-                <th data-i18n="liters_total">Total en L</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for drinker in top_drinkers %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ drinker.username }}</td>
-                <td>{{ drinker.total_pints or 0 }}</td>
-                <td>{{ drinker.total_half_pints or 0 }}</td>
-                <td>{{ drinker.total_33cl or 0 }}</td>
-                <td><strong>{{ drinker.total_liters or 0 }} L</strong></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="trophy-podium">
+        {% for drinker in top_drinkers %}
+        <div class="trophy-card trophy-{{ loop.index }}">
+            <div class="trophy-icon">
+                {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% else %}🥉{% endif %}
+            </div>
+            <div class="trophy-rank">
+                {% if loop.index == 1 %}
+                    <span data-i18n="medal_gold">Or</span>
+                {% elif loop.index == 2 %}
+                    <span data-i18n="medal_silver">Argent</span>
+                {% else %}
+                    <span data-i18n="medal_bronze">Bronze</span>
+                {% endif %}
+            </div>
+            <div class="trophy-user">{{ drinker.username }}</div>
+            <div class="trophy-liters">{{ drinker.total_liters or 0 }} L</div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
         

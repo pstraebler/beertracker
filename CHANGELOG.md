@@ -4,8 +4,12 @@
 
 🇬🇧 BeerTracker is now avaiable in English !
 
+🥇The list of the top 3 drinkers of the user dashboard has been replaced by medals
+
 	- add : language is automatically detected based on your browser settings
 	- add : button to manually switch between English and French
+	- del : detailed list of the top 3 consumers
+	- add : Medals for the heaviest drinkers (requires at least two users)
 
 ## 1.1.1 - 2026-03-11
 	- change : dashboard - alerts are now displayed at the top of the page

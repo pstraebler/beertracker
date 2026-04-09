@@ -19,7 +19,7 @@ Application web de suivi de consommation de bière avec gestion multi-utilisateu
 - **Alertes intelligentes** :
   - Avertissement si plus de 1,5L consommés sur une fenêtre glissante de 3 heures
   - Alerte à partir de 3 jours de consommation dans la même semaine
-- **Consommation des autres utilisateurs** : Le top 3 des utilisateurs ayant consommé le plus de bières pour l'année en cours est affiché, avec le détail des consommations
+- **Consommation des autres utilisateurs** : Le top 3 des utilisateurs ayant consommé le plus de bières pour l'année en cours est affiché sous forme de médailles
 - **Export de données** : Téléchargement de l'historique personnel en CSV
 
 ### Pour les administrateurs

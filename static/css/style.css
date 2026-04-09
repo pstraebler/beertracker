@@ -549,6 +549,62 @@ body {
     background-color: #f8f9fa;
 }
 
+/* USER DASHBOARD TROPHIES */
+.trophy-podium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.trophy-card {
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    background: #f8f9fa;
+}
+
+.trophy-card.trophy-1 {
+    border-color: #d4af37;
+    background: linear-gradient(145deg, #fff7d1, #f4e39a);
+}
+
+.trophy-card.trophy-2 {
+    border-color: #b7c2cc;
+    background: linear-gradient(145deg, #f6f8fa, #e3e8ec);
+}
+
+.trophy-card.trophy-3 {
+    border-color: #cd7f32;
+    background: linear-gradient(145deg, #f8e0c9, #e6be95);
+}
+
+.trophy-icon {
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.trophy-rank {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    color: var(--primary-color);
+}
+
+.trophy-user {
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.4rem;
+}
+
+.trophy-liters {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
 
 /* IMPORT/EXPORT */
 .import-export {

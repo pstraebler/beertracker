@@ -19,7 +19,7 @@ A web app to track beer consumption with multi-user management and a statistical
 - **Smart alerts**:
   - Warning if more than 1.5L is consumed within a rolling 3-hour window
   - Alert starting from 3 drinking days within the same week
-- **Other users' consumption**: Displays the top 3 users with the highest beer consumption for the current year, with detailed breakdowns.
+- **Other users' consumption**: The top 3 users who have consumed the most beer this year are displayed as medals
 - **Data export**: Download personal history as CSV.
 
 ### For administrators
