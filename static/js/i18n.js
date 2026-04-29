@@ -27,6 +27,7 @@
             last_four_weeks_consumption: "📊 Consommation sur les 4 dernières semaines",
             total_timeline: "Timeline totale",
             ranking_title: "Classement des plus gros buveurs (pour l'année {year})",
+            ranking_month_title: "Classement des plus gros buveurs (mois en cours : {month} {year})",
             medal_gold: "Or",
             medal_silver: "Argent",
             medal_bronze: "Bronze",
@@ -128,6 +129,7 @@
             last_four_weeks_consumption: "📊 Consumption over the last 4 weeks",
             total_timeline: "Full timeline",
             ranking_title: "Top drinkers ranking (for {year})",
+            ranking_month_title: "Top drinkers ranking (current month: {month} {year})",
             medal_gold: "Gold",
             medal_silver: "Silver",
             medal_bronze: "Bronze",
@@ -253,6 +255,15 @@
             const key = element.getAttribute("data-i18n-with-year");
             const year = element.getAttribute("data-year");
             element.textContent = t(key, { year });
+        });
+
+        document.querySelectorAll("[data-i18n-with-month-year]").forEach((element) => {
+            const key = element.getAttribute("data-i18n-with-month-year");
+            const year = element.getAttribute("data-year");
+            const month = Number(element.getAttribute("data-month"));
+            const monthDate = new Date(Number(year), month - 1, 1);
+            const monthLabel = monthDate.toLocaleString(currentLanguage, { month: "long" });
+            element.textContent = t(key, { month: monthLabel, year });
         });
     }
 

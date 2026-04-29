@@ -254,6 +254,47 @@ def get_top_drinkers(year=None):
     conn.close()
     return drinkers
 
+def get_top_drinkers_for_month(year=None, month=None):
+    """Obtenir le classement des plus gros buveurs pour un mois donné"""
+    today = date.today()
+    if year is None:
+        year = today.year
+    if month is None:
+        month = today.month
+
+    start = f"{year}-{month:02d}-01"
+    if month == 12:
+        next_month = date(year + 1, 1, 1)
+    else:
+        next_month = date(year, month + 1, 1)
+    end = (next_month - timedelta(days=1)).isoformat()
+
+    conn = Database.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT
+            users.username,
+            SUM(consumption.pints) AS total_pints,
+            SUM(consumption.half_pints) AS total_half_pints,
+            SUM(consumption.liters_33) AS total_33cl,
+            ROUND(
+                SUM(consumption.pints) * 0.5 +
+                SUM(consumption.half_pints) * 0.25 +
+                SUM(consumption.liters_33) * 0.33, 2
+            ) AS total_liters
+        FROM users
+        LEFT JOIN consumption
+            ON users.id = consumption.user_id
+            AND consumption.date >= ?
+            AND consumption.date <= ?
+        WHERE users.is_admin = 0
+        GROUP BY users.id, users.username
+        ORDER BY total_liters DESC
+    """, (start, end))
+    drinkers = cursor.fetchall()
+    conn.close()
+    return drinkers
+
 def check_weekly_drinking_days(user_id, current_date):
     """
     Vérifie si c'est le 3ème jour de consommation de la semaine (lundi-dimanche).

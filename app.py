@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, session, redirect, url_for, j
 from datetime import datetime, timedelta, date
 from models import Database
 from auth import hash_password, verify_password, login_required, admin_required, verify_user_exists, bcrypt
-from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, calculate_weekly_stats
+from utils import calculate_stats, export_csv, import_csv, get_top_drinkers, get_top_drinkers_for_month, calculate_weekly_stats
 from config import Config
 from flask_wtf.csrf import CSRFProtect
 from i18n import get_request_language, t
@@ -130,15 +130,21 @@ def dashboard():
         return redirect(url_for('admin'))
 
     current_year = date.today().year
+    current_month = date.today().month
+    top_month_drinkers = get_top_drinkers_for_month(current_year, current_month)[:3]
     top_drinkers = get_top_drinkers(current_year)[:3]
 
+    show_monthly_ranking = len(top_month_drinkers) >= 1
     show_ranking = len(top_drinkers) >= 2
 
     return render_template(
         'dashboard.html',
         username=session['username'],
+        top_month_drinkers=top_month_drinkers,
         top_drinkers=top_drinkers,
+        show_monthly_ranking=show_monthly_ranking,
         show_ranking=show_ranking,
+        ranking_month=current_month,
         ranking_year=current_year
     )
 
